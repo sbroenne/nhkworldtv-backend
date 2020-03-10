@@ -13,12 +13,14 @@ using System.Text.Json.Serialization;
 
 namespace sbroennelab.nhkworldtv
 {
-    public class VodProgram
+    public class Program
     {
-        public string ProgamUuid { get; set; }
+       public string VodId { get; set; }  
+       public string ProgramUuid { get; set; }
+       public DateTime LastUpdatedUtc { get; set; }
     }
 
-    public static class GetVideoUrl
+    public static class Vod
     {
         // Create a single, static HttpClient
         private static HttpClient httpClient = new HttpClient();
@@ -26,9 +28,9 @@ namespace sbroennelab.nhkworldtv
         private static Regex rx = new Regex(@"'data-de-program-uuid','(.+?)'",
               RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        public static async Task<String> GetProgramUuid(string vidId)
+        public static async Task<String> GetProgramUuid(string vodId)
         {
-            var playerUrl = String.Format("https://movie-s.nhk.or.jp/v/refid/nhkworld/prefid/{0}?embed=js&targetId=videoplayer&de-responsive=true&de-callback-method=nwCustomCallback&de-appid={1}&de-subtitle-on=false", vidId, vidId);
+            var playerUrl = String.Format("https://movie-s.nhk.or.jp/v/refid/nhkworld/prefid/{0}?embed=js&targetId=videoplayer&de-responsive=true&de-callback-method=nwCustomCallback&de-appid={1}&de-subtitle-on=false", vodId, vodId);
             var response = await httpClient.GetAsync(playerUrl);
             var contents = await response.Content.ReadAsStringAsync();
 
@@ -42,16 +44,25 @@ namespace sbroennelab.nhkworldtv
             return (programUuid);
         }
 
-        [FunctionName("GetVideoUrl")]
+        public static async Task<Program> GetVodProgram(string vodId)
+        {
+
+            var programUuid = await GetProgramUuid(vodId);
+
+            var vodProgram = new Program();
+            vodProgram.VodId = vodId;
+            vodProgram.ProgramUuid = programUuid;
+            vodProgram.LastUpdatedUtc = DateTime.UtcNow;
+
+            return(vodProgram);
+        }
+
+        [FunctionName("GetVodProgram")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route="GetVideoUrl/{vidId}")] HttpRequest req, string vidId,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route="Program/{vodId}")] HttpRequest req, string vodId,
             ILogger log)
         {
-            var programUuid = await GetProgramUuid(vidId);
-
-            // Serialize output to Json
-            var vodProgram = new VodProgram();
-            vodProgram.ProgamUuid = programUuid;
+            var vodProgram = await GetVodProgram(vodId);
 
             var options = new JsonSerializerOptions
             {

@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace sbroennelab.nhkworldtv.Tests
 {
-    public class Test_GetVideoUrl
+    public class Test_Vod
     {
         [Fact]
         public async void Test_GetProgramUuid()
         {
-            string vidId = "U1d2xiaDE6qTdDXmxFFeDzQgE4930P88";
-            var programUuid =  await sbroennelab.nhkworldtv.GetVideoUrl.GetProgramUuid(vidId);
+            string vodId = "U1d2xiaDE6qTdDXmxFFeDzQgE4930P88";
+            var programUuid =  await sbroennelab.nhkworldtv.Vod.GetProgramUuid(vodId);
             Assert.NotEmpty(programUuid);
         }
     }
