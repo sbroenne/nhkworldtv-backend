@@ -129,8 +129,20 @@ namespace sbroennelab.nhkworldtv
         {
             string playerUrl = String.Format(NHK_VIDEO_URL, programUuid);
             var response = await httpClient.GetAsync(playerUrl);
+            if (!response.IsSuccessStatusCode)
+                // Try again for second time, NHK sometimes has issues
+                response = await httpClient.GetAsync(playerUrl);
+            
             var contents = await response.Content.ReadAsStringAsync();
-            JObject video = JObject.Parse(contents);
+            JObject video = new JObject();
+            try{
+                video = JObject.Parse(contents);
+            }
+            catch (JsonReaderException ex)
+            {
+                throw ex;
+            }
+            
             JObject referenceFile = (JObject)video["response"]["WsProgramResponse"]["program"]["asset"]["referenceFile"];
             return (referenceFile);
         }

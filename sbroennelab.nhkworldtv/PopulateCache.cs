@@ -14,9 +14,7 @@ namespace sbroennelab.nhkworldtv
     {
 
         [FunctionName("PopulateCache")]
-        public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
-            ILogger log)
+        public static void Run([TimerTrigger("0 5 * * * *")]TimerInfo myTimer, ILogger log)
         {
             bool success = await Program.PopulateCloudCache();
             return new OkObjectResult(success);
