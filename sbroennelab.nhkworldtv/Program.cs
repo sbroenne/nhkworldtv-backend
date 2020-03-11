@@ -198,7 +198,7 @@ namespace sbroennelab.nhkworldtv
             return (vodProgram);
         }
 
-        public static async Task<bool> PopulateCloudCache()
+        public static async Task<int> PopulateCloudCache()
         {
             string getAllEpisodes = String.Format(NHK_ALL_EPISODES_URL, NHK_API_KEY);
             var response = await httpClient.GetAsync(getAllEpisodes);
@@ -209,12 +209,15 @@ namespace sbroennelab.nhkworldtv
             from p in episodeList["data"]["episodes"]
             select (string)p["vod_id"];
 
+            int counter = 0;
+
             foreach (var vodId in episodes)
             {
                 ProgramEntity vodProgram = await GetVodProgram(vodId);
+                counter++;
             }
 
-            return (true);
+            return (counter);
         }
 
     }

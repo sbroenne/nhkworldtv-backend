@@ -44,8 +44,8 @@ namespace sbroennelab.nhkworldtv.Tests
         [Fact]
         public async void Test_PopulateCache()
         {
-            bool success = await Program.PopulateCloudCache();
-            Assert.True(success);
+            int counter = await Program.PopulateCloudCache();
+            Assert.True(counter>0);
         }
     }
 }

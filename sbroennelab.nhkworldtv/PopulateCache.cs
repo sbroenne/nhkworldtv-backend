@@ -14,10 +14,10 @@ namespace sbroennelab.nhkworldtv
     {
 
         [FunctionName("PopulateCache")]
-        public static void Run([TimerTrigger("0 5 * * * *")]TimerInfo myTimer, ILogger log)
+        public static async void Run([TimerTrigger("0 5 * * * *")]TimerInfo myTimer, ILogger log)
         {
-            bool success = await Program.PopulateCloudCache();
-            return new OkObjectResult(success);
+            int counter = await Program.PopulateCloudCache();
+            log.LogInformation("Processed {0} cache entries", counter);
         }
     }
 }
