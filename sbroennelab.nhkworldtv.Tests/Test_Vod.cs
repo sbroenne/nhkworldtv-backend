@@ -2,6 +2,7 @@ using System;
 using Xunit;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
+using sbroennelab.nhkworldtv;
 
 namespace sbroennelab.nhkworldtv.Tests
 {
@@ -11,7 +12,7 @@ namespace sbroennelab.nhkworldtv.Tests
         public async void Test_GetProgramUuid()
         {
             string vodId = "U1d2xiaDE6qTdDXmxFFeDzQgE4930P88";
-            var programUuid = await sbroennelab.nhkworldtv.Vod.GetProgramUuid(vodId);
+            var programUuid = await Program.GetProgramUuid(vodId);
             Assert.NotEmpty(programUuid);
         }
 
@@ -19,9 +20,17 @@ namespace sbroennelab.nhkworldtv.Tests
         public async void Test_GetVodProgram()
         {
             string vodId = "U1d2xiaDE6qTdDXmxFFeDzQgE4930P88";
-            var programEntitiy = await sbroennelab.nhkworldtv.Vod.GetVodProgram(vodId);
-            
+            var programEntitiy = await Program.GetVodProgram(vodId);
+
             Assert.NotEmpty(programEntitiy.ProgramUuid);
+
+        }
+
+        [Fact]
+        public async void Test_PopulateCache()
+        {
+            bool success = await Program.PopulateCloudCache();
+            Assert.True(success);
 
         }
     }
