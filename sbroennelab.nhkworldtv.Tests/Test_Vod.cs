@@ -17,13 +17,28 @@ namespace sbroennelab.nhkworldtv.Tests
         }
 
         [Fact]
-        public async void Test_GetVodProgram()
+        public async void Test_GetReferenceFile()
         {
             string vodId = "U1d2xiaDE6qTdDXmxFFeDzQgE4930P88";
+            var programUuid = await Program.GetProgramUuid(vodId);
+            var referenceFile = await Program.GetReferenceFile(programUuid);
+            Assert.NotEmpty(referenceFile);
+        }
+
+         [Fact]
+        public async void Test_GetEpisodeDetail()
+        {
+            string vodId = "U1d2xiaDE6qTdDXmxFFeDzQgE4930P88";
+            var episode = await Program.GetEpisodeDetail(vodId);
+            Assert.NotEmpty(episode);
+        }
+
+        [Fact]
+        public async void Test_GetVodProgram()
+            {
+            string vodId = "U1d2xiaDE6qTdDXmxFFeDzQgE4930P88";
             var programEntitiy = await Program.GetVodProgram(vodId);
-
-            Assert.NotEmpty(programEntitiy.ProgramUuid);
-
+          Assert.NotEmpty(programEntitiy.ProgramUuid);
         }
 
         [Fact]
@@ -31,7 +46,6 @@ namespace sbroennelab.nhkworldtv.Tests
         {
             bool success = await Program.PopulateCloudCache();
             Assert.True(success);
-
         }
     }
 }

@@ -8,6 +8,10 @@ using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Azure.Cosmos.Table;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Linq;
+
 
 
 
@@ -26,7 +30,14 @@ namespace sbroennelab.nhkworldtv
         }
 
         public string ProgramUuid { get; set; }
-
+        public string PlayPath { get; set; }
+        public string Aspect { get; set; }
+        public string Width { get; set; }
+        public string Height { get; set; }
+        public string Title { get; set; }
+        public string Plot { get; set; }
+        public string PgmNo { get; set; }
+        public string Duration { get; set; }
     }
 
     public static class Program
@@ -51,13 +62,12 @@ namespace sbroennelab.nhkworldtv
         private static Regex rxPlayer = new Regex(@"'data-de-program-uuid','(.+?)'",
               RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private static Regex rxVodId = new Regex("'vod_id':?'(.+?)'",
-                                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
         // NHK API
         private static string NHK_API_KEY = GetEnvironmentVariable("NHK_API_KEY");
         private static string NHK_PLAYER_URL = GetEnvironmentVariable("NHK_PLAYER_URL");
+        private static string NHK_VIDEO_URL = GetEnvironmentVariable("NHK_VIDEO_URL");
         private static string NHK_ALL_EPISODES_URL = GetEnvironmentVariable("NHK_ALL_EPISODES_URL");
+        private static string NHK_GET_EPISODE_DETAIL_URL = GetEnvironmentVariable("NHK_GET_EPISODE_DETAIL_URL");
 
         public static async Task<ProgramEntity> InsertProgramEntity(CloudTable table, ProgramEntity entity)
         {
@@ -115,32 +125,27 @@ namespace sbroennelab.nhkworldtv
             return (programUuid);
         }
 
-
-        public static async Task<bool> PopulateCloudCache()
+        public static async Task<JObject> GetReferenceFile(string programUuid)
         {
-
-            string getAllEpisodes = String.Format(NHK_ALL_EPISODES_URL, NHK_API_KEY);
-
-            var response = await httpClient.GetAsync(getAllEpisodes);
+            string playerUrl = String.Format(NHK_VIDEO_URL, programUuid);
+            var response = await httpClient.GetAsync(playerUrl);
             var contents = await response.Content.ReadAsStringAsync();
-            contents = contents.Replace("\"", "'");
+            JObject video = JObject.Parse(contents);
+            JObject referenceFile = (JObject)video["response"]["WsProgramResponse"]["program"]["asset"]["referenceFile"];
+            return (referenceFile);
+        }
 
-            MatchCollection matches = rxVodId.Matches(contents);
-
-            foreach (Match match in matches)
-            {
-                string matched = match.Value;
-                matched = matched.Replace("'", "");
-                string vod_id = matched.Split(":")[1];
-                ProgramEntity vodProgram = await GetVodProgram(vod_id);
-
-            }
-
-            return (true);
+        public static async Task<JObject> GetEpisodeDetail(string vodId)
+        {
+            string playerUrl = String.Format(NHK_GET_EPISODE_DETAIL_URL, vodId, NHK_API_KEY);
+            var response = await httpClient.GetAsync(playerUrl);
+            var contents = await response.Content.ReadAsStringAsync();
+            JObject episodes = JObject.Parse(contents);
+            JObject episode = (JObject)episodes["data"]["episodes"][0];
+            return (episode);
         }
         public static async Task<ProgramEntity> GetVodProgram(string vodId)
         {
-
             // Retrieve Program from CosmosDB
             var vodProgram = await RetrieveProgramEntitiy(programTable, partitionKey, vodId);
             if (vodProgram == null)
@@ -148,13 +153,57 @@ namespace sbroennelab.nhkworldtv
                 // Not ins CosmosDB Retrieve Program from HNK
                 var programUuid = await GetProgramUuid(vodId);
 
+                // Video information
+                JObject referenceFile = await GetReferenceFile(programUuid);
+                string playPath = (string)referenceFile["rtmp"]["play_path"];
+                playPath = playPath.Split("?")[0];
+
+                string aspect = (string)referenceFile["aspectRatio"];
+                string width = (string)referenceFile["videoWidth"];
+                string height = (string)referenceFile["videoHeight"];
+
+                // Episode Details
+                JObject episode = await GetEpisodeDetail(vodId);
+                string title = (string)episode["title_clean"];
+                string plot = (string)episode["description_clean"];
+                string pgmNo = (string)episode["pgm_no"];
+                string duration = (string)episode["movie_duration"];
+
                 // Store in CosmosDB
                 vodProgram = new ProgramEntity(vodId, partitionKey);
                 vodProgram.ProgramUuid = programUuid;
+                vodProgram.PlayPath = playPath;
+                vodProgram.Aspect = aspect;
+                vodProgram.Width = width;
+                vodProgram.Height = height;
+                vodProgram.Title = title;
+                vodProgram.Plot = plot;
+                vodProgram.PgmNo = pgmNo;
+                vodProgram.Duration = duration;
                 vodProgram = await InsertProgramEntity(programTable, vodProgram);
             }
             // Return the program
             return (vodProgram);
         }
+
+        public static async Task<bool> PopulateCloudCache()
+        {
+            string getAllEpisodes = String.Format(NHK_ALL_EPISODES_URL, NHK_API_KEY);
+            var response = await httpClient.GetAsync(getAllEpisodes);
+            var contents = await response.Content.ReadAsStringAsync();
+            JObject episodeList = JObject.Parse(contents);
+
+            var episodes =
+            from p in episodeList["data"]["episodes"]
+            select (string)p["vod_id"];
+
+            foreach (var vodId in episodes)
+            {
+                ProgramEntity vodProgram = await GetVodProgram(vodId);
+            }
+
+            return (true);
+        }
+
     }
 }
