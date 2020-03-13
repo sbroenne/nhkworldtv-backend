@@ -45,6 +45,7 @@ namespace sbroennelab.nhkworldtv.Tests
         public async void Test_PopulateCache()
         {
             int counter = await Program.PopulateCloudCache();
+            Console.WriteLine("Processed {0} cache entries", counter);
             Assert.True(counter>0);
         }
     }

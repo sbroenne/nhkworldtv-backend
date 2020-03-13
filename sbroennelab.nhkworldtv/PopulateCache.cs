@@ -1,10 +1,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace sbroennelab.nhkworldtv
@@ -14,7 +11,7 @@ namespace sbroennelab.nhkworldtv
     {
 
         [FunctionName("PopulateCache")]
-        public static async void Run([TimerTrigger("0 5 * * * *")]TimerInfo myTimer, ILogger log)
+        public static async void Run([TimerTrigger("0 0 3,4,9,10 * * *")]TimerInfo myTimer, ILogger log)
         {
             int counter = await Program.PopulateCloudCache();
             log.LogInformation("Processed {0} cache entries", counter);
