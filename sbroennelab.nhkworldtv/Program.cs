@@ -228,13 +228,13 @@ namespace sbroennelab.nhkworldtv
             Dictionary<string, ProgramEntity> programDict = new Dictionary<string, ProgramEntity>();
             TableQuery<ProgramEntity> getProgramsQuery = new TableQuery<ProgramEntity>().Where(
             TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey)
-            ).OrderBy("Timestamp");
+            ).OrderByDesc("Timestamp");
             var programs = await Task<ProgramEntity>.Run(() => programTable.ExecuteQuery(getProgramsQuery).Take(maxItems));
 
             foreach (ProgramEntity program in programs)
             {
                 string vodId = program.RowKey;
-                // Filter out properties that need to be serialized
+                // Filter out properties that need NOT to be serialized
                 program.PartitionKey = null;
                 program.RowKey = null;
                 program.PgmNo = null;
