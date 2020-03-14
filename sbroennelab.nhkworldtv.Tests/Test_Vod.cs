@@ -48,6 +48,12 @@ namespace sbroennelab.nhkworldtv.Tests
             Console.WriteLine("Processed {0} cache entries", counter);
             Assert.True(counter>0);
         }
+
+        [Fact]
+        public async void Test_GetProgramList()
+        {
+            Assert.NotEmpty(await Program.GetProgramList(100));
+        }
     }
 }
 

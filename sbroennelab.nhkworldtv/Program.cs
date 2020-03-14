@@ -11,6 +11,7 @@ using Microsoft.Azure.Cosmos.Table;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Linq;
+using System.Collections.Generic;
 
 
 
@@ -132,17 +133,18 @@ namespace sbroennelab.nhkworldtv
             if (!response.IsSuccessStatusCode)
                 // Try again for second time, NHK sometimes has issues
                 response = await httpClient.GetAsync(playerUrl);
-            
+
             var contents = await response.Content.ReadAsStringAsync();
             JObject video = new JObject();
-            try{
+            try
+            {
                 video = JObject.Parse(contents);
             }
             catch (JsonReaderException ex)
             {
                 throw ex;
             }
-            
+
             JObject referenceFile = (JObject)video["response"]["WsProgramResponse"]["program"]["asset"]["referenceFile"];
             return (referenceFile);
         }
@@ -218,6 +220,27 @@ namespace sbroennelab.nhkworldtv
             }
 
             return (counter);
+        }
+
+
+        public static async Task<string> GetProgramList(int maxItems)
+        {
+            Dictionary<string, ProgramEntity> programDict = new Dictionary<string, ProgramEntity>();
+            TableQuery<ProgramEntity> getProgramsQuery = new TableQuery<ProgramEntity>().Where(
+            TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey)
+            ).OrderByDesc("Timestamp");
+            var programs = await Task<ProgramEntity>.Run(() => programTable.ExecuteQuery(getProgramsQuery).Take(maxItems));
+
+            foreach (ProgramEntity program in programs)
+            {
+                programDict.Add(program.RowKey, program);
+
+            }
+
+            string jsonString = System.Text.Json.JsonSerializer.Serialize(programDict);
+
+            return (jsonString);
+
         }
 
     }

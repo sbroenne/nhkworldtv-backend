@@ -11,7 +11,7 @@ using System.Text.Json;
 namespace sbroennelab.nhkworldtv
 {
 
-    public static class Vod
+    public static class GetVodProgram
     {
 
         [FunctionName("GetVodProgram")]
@@ -20,14 +20,8 @@ namespace sbroennelab.nhkworldtv
             ILogger log)
         {
             var vodProgram = await Program.GetVodProgram(vodId);
-
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true
-            };
-
             string jsonString;
-            jsonString = JsonSerializer.Serialize(vodProgram, options);
+            jsonString = JsonSerializer.Serialize(vodProgram);
 
             return new OkObjectResult(jsonString);
         }
