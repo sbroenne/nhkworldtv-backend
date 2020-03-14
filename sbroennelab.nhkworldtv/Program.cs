@@ -228,7 +228,7 @@ namespace sbroennelab.nhkworldtv
             Dictionary<string, ProgramEntity> programDict = new Dictionary<string, ProgramEntity>();
             TableQuery<ProgramEntity> getProgramsQuery = new TableQuery<ProgramEntity>().Where(
             TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey)
-            ).OrderByDesc("Timestamp");
+            ).OrderBy("Timestamp");
             var programs = await Task<ProgramEntity>.Run(() => programTable.ExecuteQuery(getProgramsQuery).Take(maxItems));
 
             foreach (ProgramEntity program in programs)
