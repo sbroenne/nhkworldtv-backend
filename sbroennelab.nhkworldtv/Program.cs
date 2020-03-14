@@ -233,11 +233,26 @@ namespace sbroennelab.nhkworldtv
 
             foreach (ProgramEntity program in programs)
             {
-                programDict.Add(program.RowKey, program);
+                string vodId = program.RowKey;
+                // Filter out properties that need to be serialized
+                program.PartitionKey = null;
+                program.RowKey = null;
+                program.PgmNo = null;
+                program.Plot = null;
+                program.ProgramUuid = null;
+                program.Title = null;
+                program.Duration = null;
+                program.ETag = null;
+                programDict.Add(vodId, program);
 
             }
 
-            string jsonString = System.Text.Json.JsonSerializer.Serialize(programDict);
+            var options = new JsonSerializerOptions
+            {
+                IgnoreNullValues = true
+            };
+
+            string jsonString = System.Text.Json.JsonSerializer.Serialize(programDict, options);
 
             return (jsonString);
 

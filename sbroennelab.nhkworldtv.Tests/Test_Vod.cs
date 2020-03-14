@@ -52,7 +52,8 @@ namespace sbroennelab.nhkworldtv.Tests
         [Fact]
         public async void Test_GetProgramList()
         {
-            Assert.NotEmpty(await Program.GetProgramList(100));
+            string json = await Program.GetProgramList(100);
+            Assert.NotEmpty(json);
         }
     }
 }
