@@ -41,6 +41,16 @@ namespace sbroennelab.nhkworldtv
         public string Duration { get; set; }
     }
 
+    public class CacheEpisode
+    {
+
+        public string VodId { get; set; }
+        public string PlayPath { get; set; }
+        public string Aspect { get; set; }
+        public string Width { get; set; }
+        public string Height { get; set; }
+    }
+
     public static class Program
     {
         public static string GetEnvironmentVariable(string name)
@@ -222,37 +232,34 @@ namespace sbroennelab.nhkworldtv
             return (counter);
         }
 
-
         public static async Task<string> GetProgramList(int maxItems)
         {
-            Dictionary<string, ProgramEntity> programDict = new Dictionary<string, ProgramEntity>();
-            TableQuery<ProgramEntity> getProgramsQuery = new TableQuery<ProgramEntity>().Where(
+            Dictionary<string, CacheEpisode> cacheEpisodeDict = new Dictionary<string, CacheEpisode>();
+            
+            TableQuery<DynamicTableEntity> getProgramsQuery = new TableQuery<DynamicTableEntity>(){
+                SelectColumns=new List<String>(){"RowKey", "PlayPath", "Aspect", "Width", "Height"}
+            }.Where(
             TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey)
             ).OrderByDesc("Timestamp");
-            var programs = await Task<ProgramEntity>.Run(() => programTable.ExecuteQuery(getProgramsQuery).Take(maxItems));
+            var programs = await Task<DynamicTableEntity>.Run(() => programTable.ExecuteQuery(getProgramsQuery).Take(maxItems));
 
-            foreach (ProgramEntity program in programs)
+            foreach (DynamicTableEntity program in programs)
             {
-                string vodId = program.RowKey;
-                // Filter out properties that need NOT to be serialized
-                program.PartitionKey = null;
-                program.RowKey = null;
-                program.PgmNo = null;
-                program.Plot = null;
-                program.ProgramUuid = null;
-                program.Title = null;
-                program.Duration = null;
-                program.ETag = null;
-                programDict.Add(vodId, program);
-
+                var cacheEpisode = new CacheEpisode();
+                cacheEpisode.VodId = program.RowKey;
+                cacheEpisode.PlayPath = program.Properties["PlayPath"].StringValue;
+                cacheEpisode.Aspect = program.Properties["Aspect"].StringValue;
+                cacheEpisode.Width = program.Properties["Width"].StringValue;
+                cacheEpisode.Height = program.Properties["Height"].StringValue;
+                cacheEpisodeDict.Add(cacheEpisode.VodId, cacheEpisode);
             }
 
             var options = new JsonSerializerOptions
             {
-                IgnoreNullValues = true
+                WriteIndented = false
             };
 
-            string jsonString = System.Text.Json.JsonSerializer.Serialize(programDict, options);
+            string jsonString = System.Text.Json.JsonSerializer.Serialize(cacheEpisodeDict, options);
 
             return (jsonString);
 
