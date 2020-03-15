@@ -44,7 +44,6 @@ namespace sbroennelab.nhkworldtv
     public class CacheEpisode
     {
 
-        public string VodId { get; set; }
         public string PlayPath { get; set; }
         public string Aspect { get; set; }
         public string Width { get; set; }
@@ -246,12 +245,12 @@ namespace sbroennelab.nhkworldtv
             foreach (DynamicTableEntity program in programs)
             {
                 var cacheEpisode = new CacheEpisode();
-                cacheEpisode.VodId = program.RowKey;
+                string vodId = program.RowKey;
                 cacheEpisode.PlayPath = program.Properties["PlayPath"].StringValue;
                 cacheEpisode.Aspect = program.Properties["Aspect"].StringValue;
                 cacheEpisode.Width = program.Properties["Width"].StringValue;
                 cacheEpisode.Height = program.Properties["Height"].StringValue;
-                cacheEpisodeDict.Add(cacheEpisode.VodId, cacheEpisode);
+                cacheEpisodeDict.Add(vodId, cacheEpisode);
             }
 
             var options = new JsonSerializerOptions
