@@ -8,6 +8,8 @@ namespace sbroennelab.nhkworldtv.Tests
 {
     public class Test_Vod
     {
+        private ILogger logger = (ListLogger)TestFactory.CreateLogger(LoggerTypes.List);
+
         [Fact]
         public async void Test_GetProgramUuid()
         {
@@ -25,7 +27,7 @@ namespace sbroennelab.nhkworldtv.Tests
             Assert.NotEmpty(referenceFile);
         }
 
-         [Fact]
+        [Fact]
         public async void Test_GetEpisodeDetail()
         {
             string vodId = "U1d2xiaDE6qTdDXmxFFeDzQgE4930P88";
@@ -35,10 +37,10 @@ namespace sbroennelab.nhkworldtv.Tests
 
         [Fact]
         public async void Test_GetVodProgram()
-            {
+        {
             string vodId = "U1d2xiaDE6qTdDXmxFFeDzQgE4930P88";
             var programEntitiy = await Program.GetVodProgram(vodId);
-          Assert.NotEmpty(programEntitiy.ProgramUuid);
+            Assert.NotEmpty(programEntitiy.ProgramUuid);
         }
 
         [Fact]
@@ -46,13 +48,13 @@ namespace sbroennelab.nhkworldtv.Tests
         {
             int counter = await Program.PopulateCloudCache();
             Console.WriteLine("Processed {0} cache entries", counter);
-            Assert.True(counter>0);
+            Assert.True(counter > 0);
         }
 
         [Fact]
         public async void Test_GetProgramList()
         {
-            string json = await Program.GetProgramList(100);
+            string json = await Program.GetProgramList(100, logger);
             Assert.NotEmpty(json);
         }
 

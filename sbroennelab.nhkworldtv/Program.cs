@@ -226,7 +226,7 @@ namespace sbroennelab.nhkworldtv
             return (counter);
         }
 
-        public static async Task<string> GetProgramList(int maxItems)
+        public static async Task<string> GetProgramList(int maxItems, ILogger log)
         {
             Dictionary<string, CacheEpisode> cacheEpisodeDict = new Dictionary<string, CacheEpisode>();
             
@@ -235,8 +235,10 @@ namespace sbroennelab.nhkworldtv
             }.Where(
             TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey)
             ).OrderByDesc("Timestamp");
+            
+            log.LogDebug("Starting CosmosDB query");
             var programs = await Task<DynamicTableEntity>.Run(() => programTable.ExecuteQuery(getProgramsQuery).Take(maxItems));
-
+            log.LogDebug("Starting creation of Cached Episode Dictionary");
             foreach (DynamicTableEntity program in programs)
             {
                 var cacheEpisode = new CacheEpisode();
@@ -247,7 +249,9 @@ namespace sbroennelab.nhkworldtv
                 cacheEpisode.Height = program.Properties["Height"].StringValue;
                 cacheEpisodeDict.Add(vodId, cacheEpisode);
             }
+            log.LogDebug("Starting to serialize dictionary");
             string jsonString = JsonConvert.SerializeObject(cacheEpisodeDict);
+            log.LogDebug("Json output created");
             return (jsonString);
 
         }
