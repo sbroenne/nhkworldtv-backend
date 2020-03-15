@@ -15,7 +15,7 @@ namespace sbroennelab.nhkworldtv
 
         [FunctionName("GetVodList")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Program/List/{maxItems}")] HttpRequest req, int maxItems,
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "Program/List/{maxItems}")] HttpRequest req, int maxItems,
             ILogger log)
         {
             string jsonString = await Program.GetProgramList(maxItems);

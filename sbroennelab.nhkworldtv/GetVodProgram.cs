@@ -16,7 +16,7 @@ namespace sbroennelab.nhkworldtv
 
         [FunctionName("GetVodProgram")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Program/{vodId}")] HttpRequest req, string vodId,
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "Program/{vodId}")] HttpRequest req, string vodId,
             ILogger log)
         {
             var vodProgram = await Program.GetVodProgram(vodId);

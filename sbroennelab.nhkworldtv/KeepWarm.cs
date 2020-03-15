@@ -8,9 +8,9 @@ namespace sbroennelab.nhkworldtv
     public static class KeepWarm
     {
         [FunctionName("KeepWarm")]
-        public static void Run([TimerTrigger("0 */15 * * * *")]TimerInfo myTimer, ILogger log)
+        public static void Run([TimerTrigger("0 */5 * * * *")]TimerInfo myTimer, ILogger log)
         {
-            log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
+            log.LogInformation($"Keeping function warm and cuddly at: {DateTime.Now}");
         }
     }
 }
