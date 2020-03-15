@@ -5,16 +5,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.Azure.Cosmos.Table;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Linq;
 using System.Collections.Generic;
-
-
-
 
 namespace sbroennelab.nhkworldtv
 {
@@ -252,14 +247,7 @@ namespace sbroennelab.nhkworldtv
                 cacheEpisode.Height = program.Properties["Height"].StringValue;
                 cacheEpisodeDict.Add(vodId, cacheEpisode);
             }
-
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = false
-            };
-
-            string jsonString = System.Text.Json.JsonSerializer.Serialize(cacheEpisodeDict, options);
-
+            string jsonString = JsonConvert.SerializeObject(cacheEpisodeDict);
             return (jsonString);
 
         }
