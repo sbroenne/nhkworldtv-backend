@@ -73,11 +73,11 @@ namespace sbroennelab.nhkworldtv
               RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         // NHK API
-        private static string NHK_API_KEY = GetEnvironmentVariable("NHK_API_KEY");
-        private static string NHK_PLAYER_URL = GetEnvironmentVariable("NHK_PLAYER_URL");
-        private static string NHK_VIDEO_URL = GetEnvironmentVariable("NHK_VIDEO_URL");
-        private static string NHK_ALL_EPISODES_URL = GetEnvironmentVariable("NHK_ALL_EPISODES_URL");
-        private static string NHK_GET_EPISODE_DETAIL_URL = GetEnvironmentVariable("NHK_GET_EPISODE_DETAIL_URL");
+        private static string NHK_API_KEY = "EJfK8jdS57GqlupFgAfAAwr573q01y6k";
+        private static string NHK_PLAYER_URL = "https://movie-s.nhk.or.jp/v/refid/nhkworld/prefid/{0}?embed=js&targetId=videoplayer&de-responsive=true&de-callback-method=nwCustomCallback&de-appid={1}&de-subtitle-on=false";
+        private static string NHK_VIDEO_URL = "https://movie-s.nhk.or.jp/ws/ws_program/api/67f5b750-b419-11e9-8a16-0e45e8988f42/apiv/5/mode/json?v={0}";
+        private static string NHK_ALL_EPISODES_URL = "https://api.nhk.or.jp/nhkworld/vodesdlist/v7a/all/all/en/all/all.json?apikey={0}";
+        private static string NHK_GET_EPISODE_DETAIL_URL = "https://api.nhk.or.jp/nhkworld/vodesdlist/v7a/vod_id/{0}/en/all/1.json?apikey={1}";
 
         public static async Task<ProgramEntity> InsertProgramEntity(CloudTable table, ProgramEntity entity)
         {
