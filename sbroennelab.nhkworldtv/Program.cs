@@ -33,6 +33,7 @@ namespace sbroennelab.nhkworldtv
         public string Title { get; set; }
         public string Plot { get; set; }
         public string PgmNo { get; set; }
+        public string OnAir { get; set; }
         public string Duration { get; set; }
     }
 
@@ -43,6 +44,7 @@ namespace sbroennelab.nhkworldtv
         public string Aspect { get; set; }
         public string Width { get; set; }
         public string Height { get; set; }
+        public string OnAir { get; set; }
     }
 
     public static class Program
@@ -185,6 +187,7 @@ namespace sbroennelab.nhkworldtv
                 string title = (string)episode["title_clean"];
                 string plot = (string)episode["description_clean"];
                 string pgmNo = (string)episode["pgm_no"];
+                string onAir = (string)episode["onair"];
                 string duration = (string)episode["movie_duration"];
 
                 // Store in CosmosDB
@@ -197,6 +200,7 @@ namespace sbroennelab.nhkworldtv
                 vodProgram.Title = title;
                 vodProgram.Plot = plot;
                 vodProgram.PgmNo = pgmNo;
+                vodProgram.OnAir = onAir;
                 vodProgram.Duration = duration;
                 vodProgram = await InsertProgramEntity(programTable, vodProgram);
             }
@@ -231,7 +235,7 @@ namespace sbroennelab.nhkworldtv
             Dictionary<string, CacheEpisode> cacheEpisodeDict = new Dictionary<string, CacheEpisode>();
             
             TableQuery<DynamicTableEntity> getProgramsQuery = new TableQuery<DynamicTableEntity>(){
-                SelectColumns=new List<String>(){"RowKey", "PlayPath", "Aspect", "Width", "Height"}
+                SelectColumns=new List<String>(){"RowKey", "PlayPath", "Aspect", "Width", "Height","OnAir"}
             }.Where(
             TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey)
             ).OrderByDesc("Timestamp");
@@ -247,6 +251,7 @@ namespace sbroennelab.nhkworldtv
                 cacheEpisode.Aspect = program.Properties["Aspect"].StringValue;
                 cacheEpisode.Width = program.Properties["Width"].StringValue;
                 cacheEpisode.Height = program.Properties["Height"].StringValue;
+                cacheEpisode.OnAir = program.Properties["OnAir"].StringValue;
                 cacheEpisodeDict.Add(vodId, cacheEpisode);
             }
             log.LogDebug("Starting to serialize dictionary");
