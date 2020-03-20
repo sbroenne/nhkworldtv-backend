@@ -18,7 +18,7 @@ namespace sbroennelab.nhkworldtv.Tests
         {
             var vodProgram = new VodProgram("U1d2xiaDE6qTdDXmxFFeDzQgE4930P88");
             vodProgram.Title = "Test___TestItem";
-            Assert.NotNull(vodProgram.LastUpdate);
+            Assert.NotNull(vodProgram.PartitionKey);
         }
 
         [Fact]
