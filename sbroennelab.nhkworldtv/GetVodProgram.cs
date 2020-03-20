@@ -19,11 +19,17 @@ namespace sbroennelab.nhkworldtv
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = "Program/{vodId}")] HttpRequest req, string vodId,
             ILogger log)
         {
-            var vodProgram = await Program.GetVodProgram(vodId);
-            string jsonString;
-            jsonString = JsonSerializer.Serialize(vodProgram);
-
-            return new OkObjectResult(jsonString);
+            var vodProgram = new VodProgram(vodId);
+            bool success = await vodProgram.Get();
+            if (success)
+            {
+                string jsonString = JsonSerializer.Serialize(vodProgram);
+                return new OkObjectResult(jsonString);
+            }
+            else
+            {
+                return new NotFoundResult();
+            }
         }
     }
 }
