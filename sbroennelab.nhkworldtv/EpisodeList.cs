@@ -62,7 +62,7 @@ namespace sbroennelab.nhkworldtv
         public static async Task<string> GetProgramList(int maxItems)
         {
             Dictionary<string, CacheEpisode> cacheEpisodeDict = new Dictionary<string, CacheEpisode>();
-            var sqlQueryText = String.Format("SELECT c.id, c.PlayPath, c.OnAir, c.Aspect, c.Width, c.Height FROM c ORDER by c.LastUpdate DESC OFFSET 0 LIMIT {0}", maxItems);
+            var sqlQueryText = String.Format("SELECT c.id, c.PlayPath, c.OnAir, c.Aspect, c.Width, c.Height FROM c ORDER by c.OnAir DESC OFFSET 0 LIMIT {0}", maxItems);
             QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
 
             List<VodProgram> programs = new List<VodProgram>();
