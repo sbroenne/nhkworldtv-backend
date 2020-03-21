@@ -10,10 +10,17 @@ using System.Text.Json;
 
 namespace sbroennelab.nhkworldtv
 {
-
+    /// <summary>
+    /// Azure Function GetVodProgram
+    /// </summary>
     public static class GetVodProgram
     {
-
+        /// <summary>
+        /// Gets a single program from the backend cache
+        /// </summary>
+        /// <param name="[HttpTrigger(AuthorizationLevel.Function">API Key</param>
+        /// <param name=""Program/{vodId}"">VOD ID (vodId) returned from the NHK API</param>
+        /// <returns>JSON with full program detail</returns>
         [FunctionName("GetVodProgram")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = "Program/{vodId}")] HttpRequest req, string vodId,

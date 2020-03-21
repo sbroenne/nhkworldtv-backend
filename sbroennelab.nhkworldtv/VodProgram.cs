@@ -207,36 +207,19 @@ namespace sbroennelab.nhkworldtv
         /// </summary>
         public async Task<bool> Save()
         {
-            if (!await this.Exists())
+            try
+            {
+                // Read the item to see if it exists.  
+                ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.ReadItemAsync<VodProgram>(this.VodId, new PartitionKey(this.PartitionKey));
+                return true;
+            }
+            catch (CosmosException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
             {
                 // Create an item in the container
                 ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.CreateItemAsync<VodProgram>(this, new PartitionKey(this.PartitionKey));
                 return true;
             }
-            else
-            {
-                // Item exists already
-                return false;
-            }
-        }
-
-
-        /// <summary>
-        /// Check if an item exists
-        /// </summary>
-        public async Task<bool> Exists()
-        {
-            bool exists = false;
-            var sqlQueryText = String.Format("SELECT c.id FROM c WHERE c.id='{0}'", this.VodId);
-            QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
-
-            List<VodProgram> programs = new List<VodProgram>();
-
-            await foreach (VodProgram program in Database.VodProgram.GetItemQueryIterator<VodProgram>(queryDefinition))
-            {
-                return true;
-            }
-            return exists;
+        
         }
 
         /// <summary>

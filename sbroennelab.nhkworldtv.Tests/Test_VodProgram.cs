@@ -73,13 +73,6 @@ namespace sbroennelab.nhkworldtv.Tests
         }
 
         [Fact]
-        public async void Test_Exists()
-        {
-            var vodProgram = new VodProgram("U1d2xiaDE6qTdDXmxFFeDzQgE4930P88");
-            Assert.True(await vodProgram.Exists());
-        }
-
-        [Fact]
         public async void Test_Get()
         {
             var vodProgram = new VodProgram("U1d2xiaDE6qTdDXmxFFeDzQgE4930P88");

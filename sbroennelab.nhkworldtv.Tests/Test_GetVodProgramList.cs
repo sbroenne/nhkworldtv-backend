@@ -9,20 +9,20 @@ namespace sbroennelab.nhkworldtv.Tests
     /// <summary>
     /// Unit tests for all VodPrograms related functionality
     /// </summary>
-    public class Test_EpisodeList
+    public class Test_GetVodProgramList
     {
         private ILogger logger = (ListLogger)TestFactory.CreateLogger(LoggerTypes.List);
 
         [Fact]
         public async void Test_PopulateCache()
         {
-            var counter = await EpisodeList.PopulateCloudCache();
+            var counter = await VodProgramList.PopulateCloudCache();
             Assert.True(counter > 0);
         }
         [Fact]
         public async void Test_GetProgramList()
         {
-            string json = await EpisodeList.GetProgramList(100);
+            string json = await VodProgramList.GetProgramList(100);
             Assert.NotEmpty(json);
         }
     }

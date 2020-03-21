@@ -9,16 +9,23 @@ using Microsoft.Extensions.Logging;
 
 namespace sbroennelab.nhkworldtv
 {
-
-    public static class GetVodList
+    /// <summary>
+    /// Azure Function GetVodProgramList
+    /// </summary>
+    public static class GetVodProgramList
     {
-
+        /// <summary>
+        /// Get a list of program meta data from the backend cache
+        /// </summary>
+        /// <param name="[HttpTrigger(AuthorizationLevel.Function">API Key</param>
+        /// <param name=""Program/List/{maxItems}"">Number of prgrams to return</param>
+        /// <returns>JSON with key attributes like PlayPath, Width, etc.</returns>
         [FunctionName("GetVodList")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = "Program/List/{maxItems}")] HttpRequest req, int maxItems,
             ILogger log)
         {
-            string jsonString = await EpisodeList.GetProgramList(maxItems);
+            string jsonString = await VodProgramList.GetProgramList(maxItems);
 
             return new OkObjectResult(jsonString);
         }

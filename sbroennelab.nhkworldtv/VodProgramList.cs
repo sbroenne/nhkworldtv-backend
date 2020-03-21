@@ -13,6 +13,9 @@ using System.Linq;
 
 namespace sbroennelab.nhkworldtv
 {
+    /// <summary>
+    /// Class to hold the program meta data and will be serialized to JSON
+    /// </summary>
     public class CacheEpisode
     {
 
@@ -24,12 +27,16 @@ namespace sbroennelab.nhkworldtv
     }
 
     /// <summary>
-    /// NHK Video On Demand
+    /// Get list of programs
     /// </summary>
-    public class EpisodeList
+    public class VodProgramList
     {
         private static string NHK_ALL_EPISODES_URL = "https://api.nhk.or.jp/nhkworld/vodesdlist/v7a/all/all/en/all/all.json?apikey={0}";
 
+        /// <summary>
+        /// Populates CosmosDB with the latest list of programs
+        /// </summary>
+        /// <returns>Number of items written to CosmosDB</returns>
         public static async Task<int> PopulateCloudCache()
         {
             string getAllEpisodes = String.Format(NHK_ALL_EPISODES_URL, VodProgram.NHK_API_KEY);
@@ -59,10 +66,15 @@ namespace sbroennelab.nhkworldtv
             return (counter);
         }
 
+        /// <summary>
+        /// Get a list of program meta data from CosmosDB
+        /// </summary>
+        /// <param name="maxItems">Number of prgrams to return</param>
+        /// <returns>JSON with key attributes like PlayPath, Width, etc.</returns>
         public static async Task<string> GetProgramList(int maxItems)
         {
             Dictionary<string, CacheEpisode> cacheEpisodeDict = new Dictionary<string, CacheEpisode>();
-            var sqlQueryText = String.Format("SELECT c.id, c.PlayPath, c.OnAir, c.Aspect, c.Width, c.Height FROM c ORDER by c.LastUpdate DESC OFFSET 0 LIMIT {0}", maxItems);
+            var sqlQueryText = String.Format("SELECT TOP {0} c.id, c.PlayPath, c.OnAir, c.Aspect, c.Width, c.Height FROM c ORDER by c.LastUpdate DESC", maxItems);
             QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
 
             List<VodProgram> programs = new List<VodProgram>();
@@ -81,7 +93,6 @@ namespace sbroennelab.nhkworldtv
 
             string jsonString = JsonConvert.SerializeObject(cacheEpisodeDict);
             return (jsonString);
-
         }
     }
 }
