@@ -12,8 +12,8 @@ namespace sbroennelab.nhkworldtv.Tests
     public class Test_VodProgram
     {
         private ILogger logger = (ListLogger)TestFactory.CreateLogger(LoggerTypes.List);
-        //private string vod_id = "Nya3EwaDE6X301Qo7GXi8nDHqj7GsAmX";
-        private string vod_id = "U1d2xiaDE6qTdDXmxFFeDzQgE4930P88";
+        private string vod_id = "nw_clip_c_en_9999-218";
+        //private string vod_id = "U1d2xiaDE6qTdDXmxFFeDzQgE4930P88";
 
         [Fact]
         public void Test_NewProgram()
@@ -47,7 +47,6 @@ namespace sbroennelab.nhkworldtv.Tests
             Assert.True(await vodProgram.GetEpisodeDetail());
             Assert.NotEmpty(vodProgram.Title);
         }
-
         [Fact]
         public async void Test_GetFromNHK()
         {

@@ -141,19 +141,25 @@ namespace sbroennelab.nhkworldtv
             var contents = await response.Content.ReadAsStringAsync();
 
             JObject episodes = JObject.Parse(contents);
-           
+
             if (episodes["data"]["episodes"].Count() == 1)
             {
-                    JObject episode = (JObject)episodes["data"]["episodes"][0];
-                    this.Title = (string)episode["title_clean"];
-                    this.Plot = (string)episode["description_clean"];
-                    this.PgmNo = (string)episode["pgm_no"];
-                    this.OnAir = (string)episode["onair"];
-                    this.Duration = (string)episode["movie_duration"];
-                    return true;
+                JObject episode = (JObject)episodes["data"]["episodes"][0];
+                this.Title = (string)episode["title_clean"];
+                this.Plot = (string)episode["description_clean"];
+                this.PgmNo = (string)episode["pgm_no"];
+                this.OnAir = (string)episode["onair"];
+                this.Duration = (string)episode["movie_duration"];
+                return true;
             }
-            
-            else return false;
+            else
+            {
+                // Episode lookup does not work for all Playlist episodes
+                // Set a dummy Title
+                this.Title = "From Playlist";
+                return true;
+            }
+
         }
 
 
