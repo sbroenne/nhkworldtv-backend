@@ -13,7 +13,7 @@ namespace sbroennelab.nhkworldtv
         [FunctionName("PopulateCache")]
         public static async void Run([TimerTrigger("0 0 3,4,9,10 * * *")]TimerInfo myTimer, ILogger log)
         {
-            int counter = await VodProgramList.PopulateCloudCache();
+            int counter = await VodProgramList.PopulateCloudCache(log);
             log.LogInformation("Processed {0} cache entries", counter);
         }
     }

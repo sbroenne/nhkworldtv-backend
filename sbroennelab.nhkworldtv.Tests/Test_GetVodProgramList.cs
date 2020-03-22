@@ -16,7 +16,7 @@ namespace sbroennelab.nhkworldtv.Tests
         [Fact]
         public async void Test_PopulateCache()
         {
-            var counter = await VodProgramList.PopulateCloudCache();
+            var counter = await VodProgramList.PopulateCloudCache(logger);
             Assert.True(counter > 0);
         }
         [Fact]

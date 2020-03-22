@@ -141,14 +141,19 @@ namespace sbroennelab.nhkworldtv
             var contents = await response.Content.ReadAsStringAsync();
 
             JObject episodes = JObject.Parse(contents);
-            JObject episode = (JObject)episodes["data"]["episodes"][0];
-
-            this.Title = (string)episode["title_clean"];
-            this.Plot = (string)episode["description_clean"];
-            this.PgmNo = (string)episode["pgm_no"];
-            this.OnAir = (string)episode["onair"];
-            this.Duration = (string)episode["movie_duration"];
-            return true;
+           
+            if (episodes["data"]["episodes"].Count() == 1)
+            {
+                    JObject episode = (JObject)episodes["data"]["episodes"][0];
+                    this.Title = (string)episode["title_clean"];
+                    this.Plot = (string)episode["description_clean"];
+                    this.PgmNo = (string)episode["pgm_no"];
+                    this.OnAir = (string)episode["onair"];
+                    this.Duration = (string)episode["movie_duration"];
+                    return true;
+            }
+            
+            else return false;
         }
 
 
@@ -219,7 +224,7 @@ namespace sbroennelab.nhkworldtv
                 ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.CreateItemAsync<VodProgram>(this, new PartitionKey(this.PartitionKey));
                 return true;
             }
-        
+
         }
 
         /// <summary>

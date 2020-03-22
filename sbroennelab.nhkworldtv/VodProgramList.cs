@@ -37,9 +37,10 @@ namespace sbroennelab.nhkworldtv
         /// Populates CosmosDB with the latest list of programs
         /// </summary>
         /// <returns>Number of items written to CosmosDB</returns>
-        public static async Task<int> PopulateCloudCache()
+        public static async Task<int> PopulateCloudCache(ILogger log)
         {
             string getAllEpisodes = String.Format(NHK_ALL_EPISODES_URL, VodProgram.NHK_API_KEY);
+            log.LogDebug("Getting Episode List from NHK");
             var response = await VodProgram.NHKHttpClient.GetAsync(getAllEpisodes);
             var contents = await response.Content.ReadAsStringAsync();
             JObject episodeList = JObject.Parse(contents);
@@ -51,7 +52,8 @@ namespace sbroennelab.nhkworldtv
             int counter = 0;
 
             bool success = false;
-
+            
+            log.LogDebug("Processing episodes");
             foreach (var vodId in episodes)
             {
                 success = false;
@@ -62,7 +64,6 @@ namespace sbroennelab.nhkworldtv
                     counter++;
                 }
             }
-
             return (counter);
         }
 

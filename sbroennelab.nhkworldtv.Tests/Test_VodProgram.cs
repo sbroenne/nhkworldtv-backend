@@ -12,11 +12,13 @@ namespace sbroennelab.nhkworldtv.Tests
     public class Test_VodProgram
     {
         private ILogger logger = (ListLogger)TestFactory.CreateLogger(LoggerTypes.List);
+        private string vod_id = "Nya3EwaDE6X301Qo7GXi8nDHqj7GsAmX";
+        //private string vod_id = "U1d2xiaDE6qTdDXmxFFeDzQgE4930P88";
 
         [Fact]
         public void Test_NewProgram()
         {
-            var vodProgram = new VodProgram("U1d2xiaDE6qTdDXmxFFeDzQgE4930P88");
+            var vodProgram = new VodProgram(vod_id);
             vodProgram.Title = "Test___TestItem";
             Assert.NotNull(vodProgram.PartitionKey);
         }
@@ -24,7 +26,7 @@ namespace sbroennelab.nhkworldtv.Tests
         [Fact]
         public async Task<VodProgram> Test_GetProgramUuid()
         {
-            var vodProgram = new VodProgram("U1d2xiaDE6qTdDXmxFFeDzQgE4930P88");
+            var vodProgram = new VodProgram(vod_id);
             Assert.True(await vodProgram.GetProgramUuidFromNHK());
             Assert.NotEmpty(vodProgram.ProgramUuid);
             return vodProgram;
@@ -49,7 +51,7 @@ namespace sbroennelab.nhkworldtv.Tests
         [Fact]
         public async void Test_GetFromNHK()
         {
-            var vodProgram = new VodProgram("U1d2xiaDE6qTdDXmxFFeDzQgE4930P88");
+            var vodProgram = new VodProgram(vod_id);
             Assert.True(await vodProgram.GetFromNHK());
             Assert.NotEmpty(vodProgram.Title);
         }
@@ -58,7 +60,7 @@ namespace sbroennelab.nhkworldtv.Tests
         [Fact]
         public async void Test_Load()
         {
-            var vodProgram = new VodProgram("U1d2xiaDE6qTdDXmxFFeDzQgE4930P88");
+            var vodProgram = new VodProgram(vod_id);
             Assert.True(await vodProgram.Load());
             Assert.NotEmpty(vodProgram.Title);
         }
@@ -66,7 +68,7 @@ namespace sbroennelab.nhkworldtv.Tests
         [Fact]
         public async void Test_Save()
         {
-            var vodProgram = new VodProgram("U1d2xiaDE6qTdDXmxFFeDzQgE4930P88");
+            var vodProgram = new VodProgram(vod_id);
             Assert.True(await vodProgram.GetFromNHK());
             Assert.True(await vodProgram.Save());
             Assert.NotEmpty(vodProgram.Title);
@@ -75,7 +77,7 @@ namespace sbroennelab.nhkworldtv.Tests
         [Fact]
         public async void Test_Get()
         {
-            var vodProgram = new VodProgram("U1d2xiaDE6qTdDXmxFFeDzQgE4930P88");
+            var vodProgram = new VodProgram("Nya3EwaDE6X301Qo7GXi8nDHqj7GsAmX");
             Assert.True(await vodProgram.Get());
             Assert.NotEmpty(vodProgram.Title);
         }
@@ -86,7 +88,7 @@ namespace sbroennelab.nhkworldtv.Tests
                 [Fact]
                 public async void Test_GetReferenceFile()
                 {
-                    string vodId = "U1d2xiaDE6qTdDXmxFFeDzQgE4930P88";
+                    string vodId = vod_id;
                     var programUuid = await Program.GetProgramUuid(vodId);
                     var referenceFile = await Program.GetReferenceFile(programUuid);
                     Assert.NotEmpty(referenceFile);
@@ -95,7 +97,7 @@ namespace sbroennelab.nhkworldtv.Tests
                 [Fact]
                 public async void Test_GetEpisodeDetail()
                 {
-                    string vodId = "U1d2xiaDE6qTdDXmxFFeDzQgE4930P88";
+                    string vodId = vod_id;
                     var episode = await Program.GetEpisodeDetail(vodId);
                     Assert.NotEmpty(episode);
                 }
@@ -103,7 +105,7 @@ namespace sbroennelab.nhkworldtv.Tests
                 [Fact]
                 public async void Test_GetVodProgram()
                 {
-                    string vodId = "U1d2xiaDE6qTdDXmxFFeDzQgE4930P88";
+                    string vodId = vod_id;
                     var programEntitiy = await Program.GetVodProgram(vodId);
                     Assert.NotEmpty(programEntitiy.ProgramUuid);
                 }
