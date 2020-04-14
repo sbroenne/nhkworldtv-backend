@@ -68,6 +68,43 @@ namespace sbroennelab.nhkworldtv
             return (counter);
         }
 
+        /// <summary>
+        /// Reload CosmosDB with the latest list of programs from NHK - used to update all entries
+        /// </summary>
+        /// <returns>Number of items written to CosmosDB</returns>
+        public static async Task<int> ReloadCloudCacheFromNHK(ILogger log)
+        {
+            string getAllEpisodes = String.Format(NHK_ALL_EPISODES_URL, VodProgram.NHK_API_KEY);
+            log.LogDebug("Getting Episode List from NHK");
+            var response = await VodProgram.NHKHttpClient.GetAsync(getAllEpisodes);
+            var contents = await response.Content.ReadAsStringAsync();
+            JObject episodeList = JObject.Parse(contents);
+
+            var episodes =
+            from p in episodeList["data"]["episodes"]
+            select (string)p["vod_id"];
+
+            int counter = 0;
+
+            bool success = false;
+            
+            log.LogDebug("Reloading episodes");
+            foreach (var vodId in episodes)
+            {
+                success = false;
+                var program = new VodProgram(vodId);
+                success = await program.GetFromNHK();
+                if (success)
+                {
+                    success = await program.Upsert();
+                    if (success)
+                        counter++;
+                }
+            }
+            return (counter);
+        }
+
+
   
         /// <summary>
         /// Get a list of program meta data from CosmosDB

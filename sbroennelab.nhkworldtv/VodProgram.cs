@@ -65,8 +65,8 @@ namespace sbroennelab.nhkworldtv
         public static HttpClient NHKHttpClient = new HttpClient();
 
         //RegExes
-         private static Regex rxPlayer = new Regex(@"'data-de-program-uuid','(.+?)'",
-              RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static Regex rxPlayer = new Regex(@"'data-de-program-uuid','(.+?)'",
+             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace sbroennelab.nhkworldtv
             var referenceFile = (JObject)video["response"]["WsProgramResponse"]["program"]["asset"]["referenceFile"];
             var assets = (JArray)video["response"]["WsProgramResponse"]["program"]["asset"]["assetFiles"];
 
-            
+
             // Collect all the information to create an M3U8 file
             var m3u8Elements = new List<string>();
 
@@ -131,7 +131,13 @@ namespace sbroennelab.nhkworldtv
             var m3u8Path = playPath.Replace(directory, "");
             var bitrate = (string)referenceFile["videoBitrate"];
             var m3u8Element = String.Format("{0}:{1}", bitrate, m3u8Path);
-            m3u8Elements.Add(m3u8Element);
+
+            // Check if reference file actually exists (sometimes it doesn't)
+            var reference_url = String.Format("https://nhkw-mzvod.akamaized.net/www60/mz-nhk10/_definst_/{0}/chunklist.m3u8'", referenceFilePlayPath);
+            response = await NHKHttpClient.GetAsync(reference_url);
+            if (response.IsSuccessStatusCode)
+                // Exists, add it,
+                m3u8Elements.Add(m3u8Element);
 
             foreach (var asset in assets)
             {
@@ -256,10 +262,20 @@ namespace sbroennelab.nhkworldtv
             }
             catch (CosmosException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
             {
-                // Insert an item in the container
-                ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.UpsertItemAsync<VodProgram>(this, new PartitionKey(this.PartitionKey));
+                // Create an item in the container
+                ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.CreateItemAsync<VodProgram>(this, new PartitionKey(this.PartitionKey));
                 return true;
             }
+        }
+
+        /// <summary>
+        /// Upserts the entity
+        /// </summary>
+        public async Task<bool> Upsert()
+        {
+            // Upsert an item in the container
+            ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.UpsertItemAsync<VodProgram>(this, new PartitionKey(this.PartitionKey));
+            return true;
         }
 
         /// <summary>
