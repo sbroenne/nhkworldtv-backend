@@ -39,6 +39,7 @@ namespace sbroennelab.nhkworldtv
         public string PartitionKey { get; }
         public string ProgramUuid { get; set; }
         public string PlayPath { get; set; }
+        public string M3u8Path { get; set; }
         public string Aspect { get; set; }
         public string Width { get; set; }
         public string Height { get; set; }
@@ -64,7 +65,7 @@ namespace sbroennelab.nhkworldtv
         public static HttpClient NHKHttpClient = new HttpClient();
 
         //RegExes
-        private static Regex rxPlayer = new Regex(@"'data-de-program-uuid','(.+?)'",
+         private static Regex rxPlayer = new Regex(@"'data-de-program-uuid','(.+?)'",
               RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
 
@@ -115,10 +116,36 @@ namespace sbroennelab.nhkworldtv
                 throw ex;
             }
 
-            JObject referenceFile = (JObject)video["response"]["WsProgramResponse"]["program"]["asset"]["referenceFile"];
+            var referenceFile = (JObject)video["response"]["WsProgramResponse"]["program"]["asset"]["referenceFile"];
+            var assets = (JArray)video["response"]["WsProgramResponse"]["program"]["asset"]["assetFiles"];
 
-            string playPath = (string)referenceFile["rtmp"]["play_path"];
-            this.PlayPath = playPath.Split("?")[0];
+            
+            // Collect all the information to create an M3U8 file
+            var m3u8Elements = new List<string>();
+
+            // Get the reference file (HD)
+            var directory = (string)referenceFile["rtmp"]["directory"] + "/";
+            var playPath = (string)referenceFile["rtmp"]["play_path"];
+            playPath = playPath.Split('?')[0];
+            var referenceFilePlayPath = playPath;
+            var m3u8Path = playPath.Replace(directory, "");
+            var bitrate = (string)referenceFile["videoBitrate"];
+            var m3u8Element = String.Format("{0}:{1}", bitrate, m3u8Path);
+            m3u8Elements.Add(m3u8Element);
+
+            foreach (var asset in assets)
+            {
+                directory = (string)asset["rtmp"]["directory"] + "/";
+                playPath = (string)asset["rtmp"]["play_path"];
+                playPath = playPath.Split('?')[0];
+                m3u8Path = playPath.Replace(directory, "");
+                bitrate = (string)asset["videoBitrate"];
+                m3u8Element = String.Format("{0}:{1}", bitrate, m3u8Path);
+                m3u8Elements.Add(m3u8Element);
+            }
+
+            this.M3u8Path = String.Join(",", m3u8Elements);
+            this.PlayPath = referenceFilePlayPath;
             this.Aspect = (string)referenceFile["aspectRatio"];
             this.Width = (string)referenceFile["videoWidth"];
             this.Height = (string)referenceFile["videoHeight"];
@@ -157,6 +184,8 @@ namespace sbroennelab.nhkworldtv
                 // Episode lookup does not work for all Playlist episodes
                 // Set a dummy Title
                 this.Title = "From Playlist";
+                this.PgmNo = "0";
+                this.Duration = "0";
                 return true;
             }
 
@@ -196,6 +225,7 @@ namespace sbroennelab.nhkworldtv
                 this.OnAir = vodProgramResponse.Value.OnAir;
                 this.PgmNo = vodProgramResponse.Value.PgmNo;
                 this.PlayPath = vodProgramResponse.Value.PlayPath;
+                this.M3u8Path = vodProgramResponse.Value.M3u8Path;
                 this.Plot = vodProgramResponse.Value.Plot;
                 this.ProgramUuid = vodProgramResponse.Value.ProgramUuid;
                 this.Width = vodProgramResponse.Value.Width;
@@ -226,11 +256,10 @@ namespace sbroennelab.nhkworldtv
             }
             catch (CosmosException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
             {
-                // Create an item in the container
-                ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.CreateItemAsync<VodProgram>(this, new PartitionKey(this.PartitionKey));
+                // Insert an item in the container
+                ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.UpsertItemAsync<VodProgram>(this, new PartitionKey(this.PartitionKey));
                 return true;
             }
-
         }
 
         /// <summary>
@@ -252,7 +281,7 @@ namespace sbroennelab.nhkworldtv
             }
             else
             {
-                // Couldn't find it in CosmosDB and NHK
+                // Couldn"t find it in CosmosDB and NHK
                 return false;
             }
 
