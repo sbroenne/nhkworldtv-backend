@@ -24,7 +24,6 @@ namespace sbroennelab.nhkworldtv
         public string Aspect { get; set; }
         public string Width { get; set; }
         public string Height { get; set; }
-        public string OnAir { get; set; }
     }
 
     /// <summary>
