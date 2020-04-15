@@ -53,7 +53,7 @@ namespace sbroennelab.nhkworldtv
             int counter = 0;
 
             bool success = false;
-            
+
             log.LogDebug("Processing episodes");
             foreach (var vodId in episodes)
             {
@@ -87,7 +87,7 @@ namespace sbroennelab.nhkworldtv
             int counter = 0;
 
             bool success = false;
-            
+
             log.LogDebug("Reloading episodes");
             foreach (var vodId in episodes)
             {
@@ -105,7 +105,7 @@ namespace sbroennelab.nhkworldtv
         }
 
 
-  
+
         /// <summary>
         /// Get a list of program meta data from CosmosDB
         /// </summary>
@@ -114,7 +114,7 @@ namespace sbroennelab.nhkworldtv
         public static async Task<string> GetProgramList(int maxItems)
         {
             Dictionary<string, CacheEpisode> cacheEpisodeDict = new Dictionary<string, CacheEpisode>();
-            var sqlQueryText = String.Format("SELECT TOP {0} c.id, c.PlayPath, c.M3u8Path, c.OnAir, c.Aspect, c.Width, c.Height FROM c ORDER by c.LastUpdate DESC", maxItems);
+            var sqlQueryText = String.Format("SELECT TOP {0} c.id, c.PlayPath, c.M3u8Path, c.Aspect, c.Width, c.Height FROM c ORDER by c.LastUpdate DESC", maxItems);
             QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
 
             List<VodProgram> programs = new List<VodProgram>();
@@ -128,7 +128,6 @@ namespace sbroennelab.nhkworldtv
                 cacheEpisode.Aspect = program.Aspect;
                 cacheEpisode.Width = program.Width;
                 cacheEpisode.Height = program.Height;
-                cacheEpisode.OnAir = program.OnAir;
                 cacheEpisodeDict.Add(vodId, cacheEpisode);
             }
 

@@ -23,7 +23,7 @@ namespace sbroennelab.nhkworldtv.Tests
          [Fact]
         public async void Test_ReloadCloudCacheFromNHK()
         {
-            var counter = await VodProgramList.ReloadCloudCacheFromNHK(logger);
+            var counter = await VodProgramList.ReloadCloudCacheFromNHK (logger);
             Assert.True(counter > 0);
         }
         [Fact]
