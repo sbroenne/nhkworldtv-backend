@@ -48,6 +48,7 @@ namespace sbroennelab.nhkworldtv
         public string PgmNo { get; set; }
         public string OnAir { get; set; }
         public string Duration { get; set; }
+        public Boolean HasReferenceFile { get; set; }
         public DateTime LastUpdate { get; set; }
 
         public override string ToString()
@@ -154,7 +155,9 @@ namespace sbroennelab.nhkworldtv
                 this.Aspect = aspect;
                 this.Width = width;
                 this.Height = height;
+                this.HasReferenceFile = true;
                 hasReferenceFile = true;
+                
             }
 
             int index = 0;
@@ -175,6 +178,7 @@ namespace sbroennelab.nhkworldtv
                         this.Aspect = aspect;
                         this.Width = width;
                         this.Height = height;
+                        this.HasReferenceFile = false;
                     }
                 }
                 m3u8Element = String.Format("{0}:{1}", bitrate, m3u8Path);
