@@ -24,6 +24,7 @@ namespace sbroennelab.nhkworldtv
         public string Aspect { get; set; }
         public string Width { get; set; }
         public string Height { get; set; }
+        public string OnAir { get; set; }
     }
 
     /// <summary>
@@ -113,7 +114,7 @@ namespace sbroennelab.nhkworldtv
         public static async Task<string> GetProgramList(int maxItems)
         {
             Dictionary<string, CacheEpisode> cacheEpisodeDict = new Dictionary<string, CacheEpisode>();
-            var sqlQueryText = String.Format("SELECT TOP {0} c.id, c.PlayPath, c.M3u8Path, c.Aspect, c.Width, c.Height FROM c ORDER by c.LastUpdate DESC", maxItems);
+            var sqlQueryText = String.Format("SELECT TOP {0} c.id, c.PlayPath, c.M3u8Path, c.Aspect, c.Width, c.Height, c.OnAir FROM c ORDER by c.LastUpdate DESC", maxItems);
             QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
 
             List<VodProgram> programs = new List<VodProgram>();
@@ -127,6 +128,7 @@ namespace sbroennelab.nhkworldtv
                 cacheEpisode.Aspect = program.Aspect;
                 cacheEpisode.Width = program.Width;
                 cacheEpisode.Height = program.Height;
+                cacheEpisode.OnAir = program.OnAir;
                 cacheEpisodeDict.Add(vodId, cacheEpisode);
             }
 
