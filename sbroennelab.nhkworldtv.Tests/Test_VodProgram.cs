@@ -33,10 +33,10 @@ namespace sbroennelab.nhkworldtv.Tests
         }
 
         [Fact]
-        public async void Test_GetReferenceFile()
+        public async void Test_GetAssets()
         {
             var vodProgram = await Test_GetProgramUuid();
-            Assert.True(await vodProgram.GetReferenceFile());
+            Assert.True(await vodProgram.GetAssets());
             Assert.NotEmpty(vodProgram.PlayPath);
         }
 

@@ -90,9 +90,9 @@ namespace sbroennelab.nhkworldtv
         }
 
         /// <summary>
-        /// Extracts the ReferenceFile information (e.g. PlayPath)
+        /// Get all the assets (video) information (e.g. PlayPath)
         /// </summary>
-        public async Task<bool> GetReferenceFile()
+        public async Task<bool> GetAssets()
         {
             if (this.ProgramUuid == null)
             {
@@ -122,23 +122,42 @@ namespace sbroennelab.nhkworldtv
 
             // Collect all the information to create an M3U8 file
             var m3u8Elements = new List<string>();
+            var bitrate = String.Empty;
+            var aspect = String.Empty;
+            var width = String.Empty;
+            var height = String.Empty;
+            var m3u8Path = String.Empty;
+            var m3u8Element = String.Empty;
+            var directory = String.Empty;
+            var playPath = String.Empty;
+            var hasReferenceFile = false;
 
             // Get the reference file (HD)
-            var directory = (string)referenceFile["rtmp"]["directory"] + "/";
-            var playPath = (string)referenceFile["rtmp"]["play_path"];
+            directory = (string)referenceFile["rtmp"]["directory"] + "/";
+            playPath = (string)referenceFile["rtmp"]["play_path"];
             playPath = playPath.Split('?')[0];
-            var referenceFilePlayPath = playPath;
-            var m3u8Path = playPath.Replace(directory, "");
-            var bitrate = (string)referenceFile["videoBitrate"];
-            var m3u8Element = String.Format("{0}:{1}", bitrate, m3u8Path);
 
             // Check if reference file actually exists (sometimes it doesn't)
-            var reference_url = String.Format("https://nhkw-mzvod.akamaized.net/www60/mz-nhk10/_definst_/{0}/chunklist.m3u8'", referenceFilePlayPath);
+            var reference_url = String.Format("https://nhkw-mzvod.akamaized.net/www60/mz-nhk10/_definst_/{0}/chunklist.m3u8'", playPath);
             response = await NHKHttpClient.GetAsync(reference_url);
             if (response.IsSuccessStatusCode)
+            {
                 // Exists, add it,
+                bitrate = (string)referenceFile["videoBitrate"];
+                aspect = (string)referenceFile["aspectRatio"];
+                width = (string)referenceFile["videoWidth"];
+                height = (string)referenceFile["videoHeight"];
+                m3u8Path = playPath.Replace(directory, "");
+                m3u8Element = String.Format("{0}:{1}", bitrate, m3u8Path);
                 m3u8Elements.Add(m3u8Element);
+                this.PlayPath = playPath;
+                this.Aspect = aspect;
+                this.Width = width;
+                this.Height = height;
+                hasReferenceFile = true;
+            }
 
+            int index = 0;
             foreach (var asset in assets)
             {
                 directory = (string)asset["rtmp"]["directory"] + "/";
@@ -146,15 +165,23 @@ namespace sbroennelab.nhkworldtv
                 playPath = playPath.Split('?')[0];
                 m3u8Path = playPath.Replace(directory, "");
                 bitrate = (string)asset["videoBitrate"];
+                if (index == 0)
+                {
+                    // This is the first asset, if we do not have a reference file
+                    // use the video information from this asset
+                    if (!hasReferenceFile)
+                    {
+                        this.Aspect = aspect;
+                        this.Width = width;
+                        this.Height = height;
+                    }
+                }
                 m3u8Element = String.Format("{0}:{1}", bitrate, m3u8Path);
                 m3u8Elements.Add(m3u8Element);
+                index++;
             }
 
             this.M3u8Path = String.Join(",", m3u8Elements);
-            this.PlayPath = referenceFilePlayPath;
-            this.Aspect = (string)referenceFile["aspectRatio"];
-            this.Width = (string)referenceFile["videoWidth"];
-            this.Height = (string)referenceFile["videoHeight"];
             return true;
 
         }
@@ -207,7 +234,7 @@ namespace sbroennelab.nhkworldtv
 
             if (await GetProgramUuidFromNHK())
             {
-                if (await GetReferenceFile())
+                if (await GetAssets())
                 {
                     if (await GetEpisodeDetail())
                         return true;
