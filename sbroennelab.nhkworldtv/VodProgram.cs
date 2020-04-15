@@ -171,6 +171,7 @@ namespace sbroennelab.nhkworldtv
                     // use the video information from this asset
                     if (!hasReferenceFile)
                     {
+                        this.PlayPath = playPath;
                         this.Aspect = aspect;
                         this.Width = width;
                         this.Height = height;
