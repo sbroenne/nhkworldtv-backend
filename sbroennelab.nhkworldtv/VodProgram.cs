@@ -38,8 +38,8 @@ namespace sbroennelab.nhkworldtv
         public string VodId { get; set; }
         public string PartitionKey { get; }
         public string ProgramUuid { get; set; }
-        public string PlayPath { get; set; }
-        public string M3u8Path { get; set; }
+        public string Path720P { get; set; }
+        public string Path1080P { get; set; }
         public string Aspect { get; set; }
         public string Width { get; set; }
         public string Height { get; set; }
@@ -122,77 +122,58 @@ namespace sbroennelab.nhkworldtv
 
 
             // Collect all the information to create an M3U8 file
-            var m3u8Elements = new List<string>();
             var bitrate = String.Empty;
             var aspect = String.Empty;
             var width = String.Empty;
             var height = String.Empty;
-            var m3u8Path = String.Empty;
-            var m3u8Element = String.Empty;
-            var directory = String.Empty;
             var playPath = String.Empty;
             var hasReferenceFile = false;
 
             // Get the reference file (HD)
-            directory = (string)referenceFile["rtmp"]["directory"] + "/";
             playPath = (string)referenceFile["rtmp"]["play_path"];
             playPath = playPath.Split('?')[0];
 
             // Check if reference file actually exists (sometimes it doesn't)
-            var reference_url = String.Format("https://nhkw-mzvod.akamaized.net/www60/mz-nhk10/_definst_/{0}/chunklist.m3u8'", playPath);
+            var reference_url = String.Format("https://nhkw-mzvod.akamaized.net/www60/mz-nhk10/_definst_/{0}/chunklist.m3u8", playPath);
             response = await NHKHttpClient.GetAsync(reference_url);
             if (response.IsSuccessStatusCode)
             {
-                // Exists, add it,
+                // Exists, add it and use the metadata
                 bitrate = (string)referenceFile["videoBitrate"];
                 aspect = (string)referenceFile["aspectRatio"];
                 width = (string)referenceFile["videoWidth"];
                 height = (string)referenceFile["videoHeight"];
-                m3u8Path = playPath.Replace(directory, "");
-                m3u8Element = String.Format("{0}:{1}", bitrate, m3u8Path);
-                m3u8Elements.Add(m3u8Element);
-                this.PlayPath = playPath;
-                this.Aspect = aspect;
-                this.Width = width;
-                this.Height = height;
-                this.HasReferenceFile = true;
+                this.Path1080P = reference_url;
                 hasReferenceFile = true;
-                
             }
 
-            int index = 0;
-            foreach (var asset in assets)
+            // Get the 720P Version
+            var asset = assets[0];
+            playPath = (string)asset["rtmp"]["play_path"];
+            playPath = playPath.Split('?')[0];
+            this.Path720P = String.Format("https://nhkw-mzvod.akamaized.net/www60/mz-nhk10/_definst_/{0}/chunklist.m3u8", playPath);
+            
+            // If we do not have a reference file
+            // use the video information from 720P
+            if (!hasReferenceFile)
             {
-                directory = (string)asset["rtmp"]["directory"] + "/";
-                playPath = (string)asset["rtmp"]["play_path"];
-                playPath = playPath.Split('?')[0];
-                m3u8Path = playPath.Replace(directory, "");
                 bitrate = (string)asset["videoBitrate"];
-                if (index == 0)
-                {
-                    // This is the first asset, if we do not have a reference file
-                    // use the video information from this asset
-                    if (!hasReferenceFile)
-                    {
-                        this.PlayPath = playPath;
-                        this.Aspect = aspect;
-                        this.Width = width;
-                        this.Height = height;
-                        this.HasReferenceFile = false;
-                    }
-                }
-                m3u8Element = String.Format("{0}:{1}", bitrate, m3u8Path);
-                m3u8Elements.Add(m3u8Element);
-                index++;
+                aspect = (string)asset["aspectRatio"];
+                width = (string)asset["videoWidth"];
+                height = (string)asset["videoHeight"];
+                hasReferenceFile=false;
             }
 
-            this.M3u8Path = String.Join(",", m3u8Elements);
+            this.Aspect = aspect;
+            this.Width = width;
+            this.Height = height;
+            this.HasReferenceFile = hasReferenceFile;
             return true;
 
         }
 
         /// <summary>
-        /// Extracts the EpisodeDetakl information (e.g. Title)
+        /// Extracts the EpisodeDetal information (e.g. Title)
         /// </summary>
         public async Task<bool> GetEpisodeDetail()
         {
@@ -262,8 +243,9 @@ namespace sbroennelab.nhkworldtv
                 ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.ReadItemAsync<VodProgram>(this.VodId, new PartitionKey(this.PartitionKey));
                 this.OnAir = vodProgramResponse.Value.OnAir;
                 this.PgmNo = vodProgramResponse.Value.PgmNo;
-                this.PlayPath = vodProgramResponse.Value.PlayPath;
-                this.M3u8Path = vodProgramResponse.Value.M3u8Path;
+                this.Path1080P = vodProgramResponse.Value.Path1080P;
+                this.Path720P = vodProgramResponse.Value.Path720P;
+                this.HasReferenceFile = vodProgramResponse.Value.HasReferenceFile;
                 this.Plot = vodProgramResponse.Value.Plot;
                 this.ProgramUuid = vodProgramResponse.Value.ProgramUuid;
                 this.Width = vodProgramResponse.Value.Width;

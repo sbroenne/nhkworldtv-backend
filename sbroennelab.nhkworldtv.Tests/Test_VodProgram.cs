@@ -12,8 +12,7 @@ namespace sbroennelab.nhkworldtv.Tests
     public class Test_VodProgram
     {
         private ILogger logger = (ListLogger)TestFactory.CreateLogger(LoggerTypes.List);
-        private string vod_id = "nw_vod_v_en_2004_353_20200413001000_01_1586706349";
-        //private string vod_id = "U1d2xiaDE6qTdDXmxFFeDzQgE4930P88";
+        private string vod_id = "nw_vod_v_en_2067_021_20200911133000_01_1599800682";
 
         [Fact]
         public void Test_NewProgram()
@@ -37,7 +36,7 @@ namespace sbroennelab.nhkworldtv.Tests
         {
             var vodProgram = await Test_GetProgramUuid();
             Assert.True(await vodProgram.GetAssets());
-            Assert.NotEmpty(vodProgram.PlayPath);
+            Assert.NotEmpty(vodProgram.Path720P);
         }
 
         [Fact]
@@ -80,50 +79,6 @@ namespace sbroennelab.nhkworldtv.Tests
             Assert.True(await vodProgram.Get());
             Assert.NotEmpty(vodProgram.Title);
         }
-
-
-
-        /* 
-                [Fact]
-                public async void Test_GetReferenceFile()
-                {
-                    string vodId = vod_id;
-                    var programUuid = await Program.GetProgramUuid(vodId);
-                    var referenceFile = await Program.GetReferenceFile(programUuid);
-                    Assert.NotEmpty(referenceFile);
-                }
-
-                [Fact]
-                public async void Test_GetEpisodeDetail()
-                {
-                    string vodId = vod_id;
-                    var episode = await Program.GetEpisodeDetail(vodId);
-                    Assert.NotEmpty(episode);
-                }
-
-                [Fact]
-                public async void Test_GetVodProgram()
-                {
-                    string vodId = vod_id;
-                    var programEntitiy = await Program.GetVodProgram(vodId);
-                    Assert.NotEmpty(programEntitiy.ProgramUuid);
-                }
-
-                [Fact]
-                public async void Test_PopulateCache()
-                {
-                    int counter = await Program.PopulateCloudCache();
-                    Console.WriteLine("Processed {0} cache entries", counter);
-                    Assert.True(counter > 0);
-                }
-
-                [Fact]
-                public async void Test_GetProgramList()
-                {
-                    string json = await Program.GetProgramList(100, logger);
-                    Assert.NotEmpty(json);
-                } */
-
     }
 }
 

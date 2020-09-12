@@ -19,8 +19,8 @@ namespace sbroennelab.nhkworldtv
     public class CacheEpisode
     {
 
-        public string PlayPath { get; set; }
-        public string M3u8Path { get; set; }
+        public string Path1080P { get; set; }
+        public string Path720P { get; set; }
         public string Aspect { get; set; }
         public string Width { get; set; }
         public string Height { get; set; }
@@ -110,11 +110,11 @@ namespace sbroennelab.nhkworldtv
         /// Get a list of program meta data from CosmosDB
         /// </summary>
         /// <param name="maxItems">Number of prgrams to return</param>
-        /// <returns>JSON with key attributes like PlayPath, Width, etc.</returns>
+        /// <returns>JSON with key attributes like Path1080P, Width, etc.</returns>
         public static async Task<string> GetProgramList(int maxItems)
         {
             Dictionary<string, CacheEpisode> cacheEpisodeDict = new Dictionary<string, CacheEpisode>();
-            var sqlQueryText = String.Format("SELECT TOP {0} c.id, c.PlayPath, c.M3u8Path, c.Aspect, c.Width, c.Height, c.OnAir FROM c ORDER by c.LastUpdate DESC", maxItems);
+            var sqlQueryText = String.Format("SELECT TOP {0} c.id, c.Path1080P, c.Path720P, c.Aspect, c.Width, c.Height, c.OnAir FROM c ORDER by c.LastUpdate DESC", maxItems);
             QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
 
             List<VodProgram> programs = new List<VodProgram>();
@@ -123,8 +123,8 @@ namespace sbroennelab.nhkworldtv
             {
                 var cacheEpisode = new CacheEpisode();
                 string vodId = program.VodId;
-                cacheEpisode.PlayPath = program.PlayPath;
-                cacheEpisode.M3u8Path = program.M3u8Path;
+                cacheEpisode.Path1080P = program.Path1080P;
+                cacheEpisode.Path720P = program.Path720P;
                 cacheEpisode.Aspect = program.Aspect;
                 cacheEpisode.Width = program.Width;
                 cacheEpisode.Height = program.Height;

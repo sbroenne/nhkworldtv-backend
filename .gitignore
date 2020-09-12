@@ -263,3 +263,10 @@ paket-files/
 __pycache__/
 *.pyc
 .DS_Store
+__azurite_db_blob__.json
+__azurite_db_blob_extent__.json
+.vscode/extensions.json
+.vscode/launch.json
+.vscode/settings.json
+.vscode/tasks.json
+__blobstorage__/eb438280-747c-464f-994a-16e6ed93b560

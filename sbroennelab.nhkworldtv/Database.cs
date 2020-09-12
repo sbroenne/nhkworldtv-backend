@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Azure.Cosmos;
+using Microsoft.Extensions.Configuration; 
 
 namespace sbroennelab.nhkworldtv
 {
