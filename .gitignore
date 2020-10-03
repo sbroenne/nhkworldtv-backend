@@ -265,6 +265,7 @@ __pycache__/
 .DS_Store
 
 # Azurite extension temp files
-__queuestorage__/*
-__blobstorage__/*
-__azurite_*
+**/__queuestorage__/*
+**/__blobstorage__/*
+**/__azurite_*
+
