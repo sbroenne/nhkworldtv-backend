@@ -1,7 +1,10 @@
 name: Deploy NHK World TV Cache project to Azure Function App
 
 on:
-  [push]
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+    - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
 # CONFIGURATION
 # For help, go to https://github.com/Azure/Actions
