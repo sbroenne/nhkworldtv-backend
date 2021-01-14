@@ -1,14 +1,12 @@
 using System;
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
 using System.Net;
-using Azure.Cosmos;
+using Microsoft.Azure.Cosmos;
 using System.Linq;
 
 namespace sbroennelab.nhkworldtv
@@ -34,7 +32,7 @@ namespace sbroennelab.nhkworldtv
         }
 
 
-        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        [JsonProperty(PropertyName = "id")]
         public string VodId { get; set; }
         public string PartitionKey { get; }
         public string ProgramUuid { get; set; }
@@ -152,7 +150,7 @@ namespace sbroennelab.nhkworldtv
             playPath = (string)asset["rtmp"]["play_path"];
             playPath = playPath.Split('?')[0];
             this.Path720P = String.Format("https://nhkw-mzvod.akamaized.net/www60/mz-nhk10/_definst_/{0}/chunklist.m3u8", playPath);
-            
+
             // If we do not have a reference file
             // use the video information from 720P
             if (!hasReferenceFile)
@@ -161,7 +159,7 @@ namespace sbroennelab.nhkworldtv
                 aspect = (string)asset["aspectRatio"];
                 width = (string)asset["videoWidth"];
                 height = (string)asset["videoHeight"];
-                hasReferenceFile=false;
+                hasReferenceFile = false;
             }
 
             this.Aspect = aspect;
@@ -240,23 +238,23 @@ namespace sbroennelab.nhkworldtv
             try
             {
                 // Read the item to see if it exists.  
-                ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.ReadItemAsync<VodProgram>(this.VodId, new PartitionKey(this.PartitionKey));
-                this.OnAir = vodProgramResponse.Value.OnAir;
-                this.PgmNo = vodProgramResponse.Value.PgmNo;
-                this.Path1080P = vodProgramResponse.Value.Path1080P;
-                this.Path720P = vodProgramResponse.Value.Path720P;
-                this.HasReferenceFile = vodProgramResponse.Value.HasReferenceFile;
-                this.Plot = vodProgramResponse.Value.Plot;
-                this.ProgramUuid = vodProgramResponse.Value.ProgramUuid;
-                this.Width = vodProgramResponse.Value.Width;
-                this.Height = vodProgramResponse.Value.Height;
-                this.Aspect = vodProgramResponse.Value.Aspect;
-                this.Duration = vodProgramResponse.Value.Duration;
-                this.Title = vodProgramResponse.Value.Title;
-                this.LastUpdate = vodProgramResponse.Value.LastUpdate;
+                VodProgram item = await Database.VodProgram.ReadItemAsync<VodProgram>(this.VodId, new PartitionKey(this.PartitionKey));
+                this.OnAir = item.OnAir;
+                this.PgmNo = item.PgmNo;
+                this.Path1080P = item.Path1080P;
+                this.Path720P = item.Path720P;
+                this.HasReferenceFile = item.HasReferenceFile;
+                this.Plot = item.Plot;
+                this.ProgramUuid = item.ProgramUuid;
+                this.Width = item.Width;
+                this.Height = item.Height;
+                this.Aspect = item.Aspect;
+                this.Duration = item.Duration;
+                this.Title = item.Title;
+                this.LastUpdate = item.LastUpdate;
                 return true;
             }
-            catch (CosmosException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
                 return false;
             }
@@ -274,7 +272,7 @@ namespace sbroennelab.nhkworldtv
                 ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.ReadItemAsync<VodProgram>(this.VodId, new PartitionKey(this.PartitionKey));
                 return true;
             }
-            catch (CosmosException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
                 // Create an item in the container
                 ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.CreateItemAsync<VodProgram>(this, new PartitionKey(this.PartitionKey));
