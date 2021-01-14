@@ -281,12 +281,12 @@ namespace sbroennelab.nhkworldtv
         }
 
         /// <summary>
-        /// Upserts the entity
+        /// Delete the entity
         /// </summary>
-        public async Task<bool> Upsert()
+        public async Task<bool> Delete()
         {
-            // Upsert an item in the container
-            ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.UpsertItemAsync<VodProgram>(this, new PartitionKey(this.PartitionKey));
+            // Delete an item in the container
+            ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.DeleteItemAsync<VodProgram>(this.VodId, new PartitionKey(this.PartitionKey));
             return true;
         }
 

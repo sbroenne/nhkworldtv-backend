@@ -50,58 +50,63 @@ namespace sbroennelab.nhkworldtv
             from p in episodeList["data"]["episodes"]
             select (string)p["vod_id"];
 
-            int counter = 0;
+            // Get the existing entries from CosmosDB
+            var sqlQueryText = "SELECT c.id FROM c";
+            QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
+            FeedIterator<VodProgram> queryResultSetIterator = Database.VodProgram.GetItemQueryIterator<VodProgram>(queryDefinition);
 
+
+            var dbEpisodes = new List<VodProgram>();
+            int insertCounter = 0;
+            int deleteCounter = 0;
             bool success = false;
-
-            log.LogDebug("Processing episodes");
-            foreach (var vodId in episodes)
+            while (queryResultSetIterator.HasMoreResults)
             {
-                success = false;
-                var program = new VodProgram(vodId);
-                success = await program.Get();
-                if (success)
-                {
-                    counter++;
-                }
+                FeedResponse<VodProgram> currentResultSet = await queryResultSetIterator.ReadNextAsync();
+                dbEpisodes.AddRange(currentResultSet);
             }
-            return (counter);
-        }
 
-        /// <summary>
-        /// Reload CosmosDB with the latest list of programs from NHK - used to update all entries
-        /// </summary>
-        /// <returns>Number of items written to CosmosDB</returns>
-        public static async Task<int> ReloadCloudCacheFromNHK(ILogger log)
-        {
-            string getAllEpisodes = String.Format(NHK_ALL_EPISODES_URL, VodProgram.NHK_API_KEY);
-            log.LogDebug("Getting Episode List from NHK");
-            var response = await VodProgram.NHKHttpClient.GetAsync(getAllEpisodes);
-            var contents = await response.Content.ReadAsStringAsync();
-            JObject episodeList = JObject.Parse(contents);
+            var dbVodIds = from p in dbEpisodes
+                           select p.VodId;
 
-            var episodes =
-            from p in episodeList["data"]["episodes"]
-            select (string)p["vod_id"];
-
-            int counter = 0;
-
-            bool success = false;
-
-            log.LogDebug("Reloading episodes");
+            // Update CosmosDB with new entries
             foreach (var vodId in episodes)
             {
-                success = false;
-                var program = new VodProgram(vodId);
-                success = await program.GetFromNHK();
-                if (success)
+                // Check if vodId is already in CosmosDB
+                if (!dbVodIds.Contains(vodId))
                 {
-                    success = await program.Upsert();
+                    // No, create it it!
+                    success = false;
+                    var program = new VodProgram(vodId);
+                    success = await program.Get();
                     if (success)
-                        counter++;
+                    {
+                        insertCounter++;
+                    }
                 }
             }
-            return (counter);
+
+            // Delete stale DB Entrie
+            foreach (var vodId in dbVodIds)
+            {
+                // Check if vodId no longer exists in NHK episode list
+                if (!episodes.Contains(vodId))
+                {
+                    // It doesn't exist, delete it
+                    success = false;
+                    var program = new VodProgram(vodId);
+                    success = await program.Delete();
+                    if (success)
+                    {
+                        deleteCounter++;
+                    }
+                }
+            }
+
+            log.LogDebug(String.Format("Inserted {0} - deleted {1} episodes", insertCounter, deleteCounter));
+
+            return (insertCounter);
+
         }
 
 
