@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Net;
-using Azure.Cosmos;
+using Microsoft.Azure.Cosmos;
 using System.Linq;
 
 namespace sbroennelab.nhkworldtv
@@ -116,20 +116,23 @@ namespace sbroennelab.nhkworldtv
             Dictionary<string, CacheEpisode> cacheEpisodeDict = new Dictionary<string, CacheEpisode>();
             var sqlQueryText = String.Format("SELECT TOP {0} c.id, c.Path1080P, c.Path720P, c.Aspect, c.Width, c.Height, c.OnAir FROM c ORDER by c.LastUpdate DESC", maxItems);
             QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
+            FeedIterator<VodProgram> queryResultSetIterator = Database.VodProgram.GetItemQueryIterator<VodProgram>(queryDefinition);
 
-            List<VodProgram> programs = new List<VodProgram>();
-
-            await foreach (VodProgram program in Database.VodProgram.GetItemQueryIterator<VodProgram>(queryDefinition))
+            while (queryResultSetIterator.HasMoreResults)
             {
-                var cacheEpisode = new CacheEpisode();
-                string vodId = program.VodId;
-                cacheEpisode.Path1080P = program.Path1080P;
-                cacheEpisode.Path720P = program.Path720P;
-                cacheEpisode.Aspect = program.Aspect;
-                cacheEpisode.Width = program.Width;
-                cacheEpisode.Height = program.Height;
-                cacheEpisode.OnAir = program.OnAir;
-                cacheEpisodeDict.Add(vodId, cacheEpisode);
+                FeedResponse<VodProgram> currentResultSet = await queryResultSetIterator.ReadNextAsync();
+                foreach (VodProgram program in currentResultSet)
+                {
+                    var cacheEpisode = new CacheEpisode();
+                    string vodId = program.VodId;
+                    cacheEpisode.Path1080P = program.Path1080P;
+                    cacheEpisode.Path720P = program.Path720P;
+                    cacheEpisode.Aspect = program.Aspect;
+                    cacheEpisode.Width = program.Width;
+                    cacheEpisode.Height = program.Height;
+                    cacheEpisode.OnAir = program.OnAir;
+                    cacheEpisodeDict.Add(vodId, cacheEpisode);
+                }
             }
 
             string jsonString = JsonConvert.SerializeObject(cacheEpisodeDict);

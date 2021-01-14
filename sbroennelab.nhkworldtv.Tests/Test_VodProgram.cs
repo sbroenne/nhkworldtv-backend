@@ -12,7 +12,7 @@ namespace sbroennelab.nhkworldtv.Tests
     public class Test_VodProgram
     {
         private ILogger logger = (ListLogger)TestFactory.CreateLogger(LoggerTypes.List);
-        private string vod_id = "nw_vod_v_en_2067_021_20200911133000_01_1599800682";
+        private string vod_id = "01_nw_vod_v_en_2029_138_20200820083000_01_1597881922";
 
         [Fact]
         public void Test_NewProgram()

@@ -24,7 +24,7 @@ The function app has been deployed to Azure in West Europe (I live in Germany)
 
 There are three functions:
 
-- https://nhkworldtvwe.azurewebsites.net/api/Program/List/{maxItems} - returns a JSON with all the video-on-demand programs including the paths to the actual episodes 720P and 1080P 
+- https://nhkworldtvwe.azurewebsites.net/api/Program/List/{maxItems} - returns a JSON with all the video-on-demand programs including the paths to the actual episodes 720P and 1080P
 - https://nhkworldtvwe.azurewebsites.net/api/Program/{vodId} - gets a single episode
 - PopulateCache - runs on a time to update the underlying CosmosDB
 
@@ -32,7 +32,7 @@ You need a key to access these functions in order to prevent abuse by bots.
 
 ## CosmosDB Set-up
 
-You can use the following [code](./sbroennelab.nhkworldtv/DDL_VodProgram.cs) to create the CosmosDB database and container. There is also a corresponding test so you can use your favorite test runner as well.
+There is a an ARM template you can deploy in [sbroennelab.nhkworldtv/arm/cosmosdb-nhkdb](.sbroennelab.nhkworldtv/arm/cosmosdb-nhkdb). It will create the CosmosDB **nhkdb** in the resource group **nhkworldtv** in **West Europe** ny default. It will create a container **VodProgram**.
 
 ## Development Environment
 
@@ -40,7 +40,7 @@ I develop with Visual Studio Code on a Windows 10 box using WSL2 running Ubuntu 
 
 I use the Azurite extension instead of the Azure Storage Emulator.
 
-**Important hint while unit testing**: You need to set the application setting as Environment variables in **Windows 10** if you want to run the unit tests from the test runner (in my case .NET Test Explorer). Otherwise the functions will not find them - even though they are defined and used in local.settings.json.
+**Important hint while unit testing**: You need to set the application setting as Environment variables in **Windows 10/WSLV2** if you want to run the unit tests from the test runner (in my case .NET Test Explorer). Otherwise the functions will not find them - even though they are defined and used in local.settings.json.
 
 It is a pure .Net Core solution so you should be able to use any DEV environment you prefer.
 
@@ -48,7 +48,7 @@ It is a pure .Net Core solution so you should be able to use any DEV environment
 
 You will need to add the following Application Settings in your function app:
 
-~~~~
+```
   {
     "name": "COSMOS_ACCOUNT_KEY",
     "value": "<your Cosmos Account Key value>",
@@ -69,6 +69,6 @@ You will need to add the following Application Settings in your function app:
     "value": "<your Cosmos DB endpoint value>",
     "slotSetting": false
   }
-~~~~
+```
 
 I will add ARM templates soon so that should make everything easier but there aren't many steps to automate.

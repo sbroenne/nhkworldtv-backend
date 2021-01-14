@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Azure.Cosmos;
-using Microsoft.Extensions.Configuration; 
+using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Configuration;
 
 namespace sbroennelab.nhkworldtv
 {
@@ -22,8 +22,8 @@ namespace sbroennelab.nhkworldtv
         public static CosmosClient DatabaseClient = new CosmosClient(GetEnvironmentVariable("ENDPOINT_URL"), GetEnvironmentVariable("COSMOS_ACCOUNT_KEY"));
         public static string DatabaseId = GetEnvironmentVariable("DATABASE_ID");
         public static string ContainerVodProgram = GetEnvironmentVariable("DATABSE_CONTAINER_VOD_PROGRAM");
-        public static CosmosContainer VodProgram = DatabaseClient.GetContainer(DatabaseId, ContainerVodProgram);
- 
+        public static Container VodProgram = DatabaseClient.GetContainer(DatabaseId, ContainerVodProgram);
+
 
     }
 }
