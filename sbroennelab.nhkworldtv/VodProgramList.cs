@@ -103,7 +103,7 @@ namespace sbroennelab.nhkworldtv
                 }
             }
 
-            log.LogDebug(String.Format("Inserted {0} - deleted {1} episodes", insertCounter, deleteCounter));
+            log.LogInformation(String.Format("Inserted {0} - deleted {1} episodes", insertCounter, deleteCounter));
 
             return (insertCounter);
 

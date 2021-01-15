@@ -1,5 +1,4 @@
 using System;
-using System.Text.Json;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
@@ -49,10 +48,6 @@ namespace sbroennelab.nhkworldtv
         public Boolean HasReferenceFile { get; set; }
         public DateTime LastUpdate { get; set; }
 
-        public override string ToString()
-        {
-            return System.Text.Json.JsonSerializer.Serialize(this);
-        }
 
         // NHK API
         public static string NHK_API_KEY = "EJfK8jdS57GqlupFgAfAAwr573q01y6k";
