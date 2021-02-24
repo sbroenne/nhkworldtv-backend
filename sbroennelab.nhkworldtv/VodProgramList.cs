@@ -27,6 +27,13 @@ namespace sbroennelab.nhkworldtv
         public string OnAir { get; set; }
     }
 
+    public class CacheEpisodeV2
+    {
+        public string P1080P { get; set; }
+        public string P720P { get; set; }
+        public string OnAir { get; set; }
+    }
+
     /// <summary>
     /// Get list of programs
     /// </summary>
@@ -135,6 +142,37 @@ namespace sbroennelab.nhkworldtv
                     cacheEpisode.Aspect = program.Aspect;
                     cacheEpisode.Width = program.Width;
                     cacheEpisode.Height = program.Height;
+                    cacheEpisode.OnAir = program.OnAir;
+                    cacheEpisodeDict.Add(vodId, cacheEpisode);
+                }
+            }
+
+            string jsonString = JsonConvert.SerializeObject(cacheEpisodeDict);
+            return (jsonString);
+        }
+
+        /// <summary>
+        /// Get a list of program meta data from CosmosDB - Version 2
+        /// </summary>
+        /// <param name="maxItems">Number of programs to return</param>
+        /// <returns>Minimal JSON</returns>
+        public static async Task<string> GetProgramListV2(int maxItems)
+        {
+            var cacheEpisodeDict = new Dictionary<string, CacheEpisodeV2>();
+            var sqlQueryText = String.Format("SELECT TOP {0} c.id, c.Path1080P, c.Path720P, c.OnAir FROM c ORDER by c.LastUpdate DESC", maxItems);
+            var queryDefinition = new QueryDefinition(sqlQueryText);
+            FeedIterator<VodProgram> queryResultSetIterator = Database.VodProgram.GetItemQueryIterator<VodProgram>(queryDefinition);
+            var baseUrl = "https://nhkw-mzvod.akamaized.net/www60/mz-nhk10/_definst_/mp4:mm/flvmedia/5905";
+
+            while (queryResultSetIterator.HasMoreResults)
+            {
+                FeedResponse<VodProgram> currentResultSet = await queryResultSetIterator.ReadNextAsync();
+                foreach (VodProgram program in currentResultSet)
+                {
+                    var cacheEpisode = new CacheEpisodeV2();
+                    string vodId = program.VodId;
+                    cacheEpisode.P1080P = program.Path1080P.Replace(baseUrl, "");
+                    cacheEpisode.P720P = program.Path720P.Replace(baseUrl, "");
                     cacheEpisode.OnAir = program.OnAir;
                     cacheEpisodeDict.Add(vodId, cacheEpisode);
                 }
