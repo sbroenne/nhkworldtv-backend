@@ -23,14 +23,14 @@ namespace sbroennelab.nhkworldtv.Tests
         [Fact]
         public async void Test_GetProgramList()
         {
-            string json = await VodProgramList.GetProgramList(100);
+            string json = await VodProgramList.GetProgramList(2000);
             Assert.NotEmpty(json);
         }
 
         [Fact]
         public async void Test_GetProgramListV2()
         {
-            string json = await VodProgramList.GetProgramListV2(100);
+            string json = await VodProgramList.GetProgramListV2(2000);
             Assert.NotEmpty(json);
         }
     }
