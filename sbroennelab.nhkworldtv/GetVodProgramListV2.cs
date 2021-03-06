@@ -23,7 +23,7 @@ namespace sbroennelab.nhkworldtv
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = "Program/v2/List/{maxItems}")] HttpRequest req, int maxItems,
             ILogger log)
         {
-            string jsonString = await VodProgramList.GetProgramListV2(maxItems);
+            string jsonString = await VodProgramList.GetProgramList(maxItems);
 
             return new OkObjectResult(jsonString);
         }

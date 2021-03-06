@@ -1,55 +1,53 @@
-using System;
-using Xunit;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
-using sbroennelab.nhkworldtv;
+using Xunit;
 
 namespace sbroennelab.nhkworldtv.Tests
 {
     /// <summary>
     /// Unit tests for all VodPrograms related functionality
     /// </summary>
+
+
+    [Collection("VOD collection")]
     public class Test_VodProgram
     {
         private ILogger logger = (ListLogger)TestFactory.CreateLogger(LoggerTypes.List);
-        private string vod_id = "01_nw_vod_v_en_2029_138_20200820083000_01_1597881922";
+
+        VodFixture fixture;
+        public Test_VodProgram(VodFixture fixture)
+        {
+            this.fixture = fixture;
+        }
 
         [Fact]
         public void Test_NewProgram()
         {
-            var vodProgram = new VodProgram(vod_id);
+            var vodProgram = new VodProgram(fixture.VodId, logger);
             vodProgram.Title = "Test___TestItem";
             Assert.NotNull(vodProgram.PartitionKey);
         }
 
-        [Fact]
-        public async Task<VodProgram> Test_GetProgramUuid()
-        {
-            var vodProgram = new VodProgram(vod_id);
-            Assert.True(await vodProgram.GetProgramUuidFromNHK());
-            Assert.NotEmpty(vodProgram.ProgramUuid);
-            return vodProgram;
-        }
 
         [Fact]
         public async void Test_GetAssets()
         {
-            var vodProgram = await Test_GetProgramUuid();
-            Assert.True(await vodProgram.GetAssets());
+            var vodProgram = new VodProgram(fixture.VodId, logger);
+            vodProgram.ProgramUuid = fixture.ProgramUuid;
+            Assert.True(await vodProgram.GetAsset());
             Assert.NotEmpty(vodProgram.Path720P);
         }
 
         [Fact]
         public async void Test_GetEpisodeDetail()
         {
-            var vodProgram = await Test_GetProgramUuid();
+            var vodProgram = new VodProgram(fixture.VodId, logger);
             Assert.True(await vodProgram.GetEpisodeDetail());
             Assert.NotEmpty(vodProgram.Title);
         }
         [Fact]
         public async void Test_GetFromNHK()
         {
-            var vodProgram = new VodProgram(vod_id);
+            var vodProgram = new VodProgram(fixture.VodId, logger);
             Assert.True(await vodProgram.GetFromNHK());
             Assert.NotEmpty(vodProgram.Title);
         }
@@ -58,7 +56,7 @@ namespace sbroennelab.nhkworldtv.Tests
         [Fact]
         public async void Test_Load()
         {
-            var vodProgram = new VodProgram(vod_id);
+            var vodProgram = new VodProgram(fixture.VodId, logger);
             Assert.True(await vodProgram.Load());
             Assert.NotEmpty(vodProgram.Title);
         }
@@ -66,7 +64,7 @@ namespace sbroennelab.nhkworldtv.Tests
         [Fact]
         public async void Test_Save()
         {
-            var vodProgram = new VodProgram(vod_id);
+            var vodProgram = new VodProgram(fixture.VodId, logger);
             Assert.True(await vodProgram.GetFromNHK());
             Assert.True(await vodProgram.Save());
             Assert.NotEmpty(vodProgram.Title);
@@ -75,10 +73,24 @@ namespace sbroennelab.nhkworldtv.Tests
         [Fact]
         public async void Test_Get()
         {
-            var vodProgram = new VodProgram(vod_id);
+            var vodProgram = new VodProgram(fixture.VodId, logger);
             Assert.True(await vodProgram.Get());
             Assert.NotEmpty(vodProgram.Title);
         }
+
+        [Fact]
+        public async void Test_Delete()
+        {
+            var vodProgram = new VodProgram(fixture.VodId, logger);
+
+            // Load the program and save it Cosmos DB
+            Assert.True(await vodProgram.Get());
+            // Delete it from Cosmos DB
+            Assert.True(await vodProgram.Delete());
+            // Load the program and save it Cosmos DB again so that it can be returned to the client
+            Assert.True(await vodProgram.Get());
+        }
+
     }
 }
 
