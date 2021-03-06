@@ -9,11 +9,11 @@ namespace sbroennelab.nhkworldtv.Tests
     /// </summary>
 
     [Collection("VOD collection")]
-    public class Test_NhkAoi
+    public class Test_NhkApi
     {
 
         VodFixture fixture;
-        public Test_NhkAoi(VodFixture fixture)
+        public Test_NhkApi(VodFixture fixture)
         {
             this.fixture = fixture;
         }
