@@ -1,12 +1,11 @@
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
+using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 using System.Net;
-using Microsoft.Azure.Cosmos;
-using System.Linq;
-using Microsoft.Extensions.Logging;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace sbroennelab.nhkworldtv
 {

@@ -1,8 +1,5 @@
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
-using Microsoft.Extensions.Configuration;
+using System;
 
 namespace sbroennelab.nhkworldtv
 {
