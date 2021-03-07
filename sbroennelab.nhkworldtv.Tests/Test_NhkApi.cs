@@ -1,6 +1,6 @@
-using Xunit;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
+using Xunit;
 
 namespace sbroennelab.nhkworldtv.Tests
 {

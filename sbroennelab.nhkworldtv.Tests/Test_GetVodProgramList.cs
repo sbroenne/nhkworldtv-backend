@@ -1,5 +1,5 @@
-using Xunit;
 using Microsoft.Extensions.Logging;
+using Xunit;
 
 namespace sbroennelab.nhkworldtv.Tests
 {

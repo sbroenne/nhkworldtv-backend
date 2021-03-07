@@ -1,7 +1,6 @@
+using Microsoft.Extensions.Logging;
 using System;
 using Xunit;
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 
 namespace sbroennelab.nhkworldtv.Tests
 {
