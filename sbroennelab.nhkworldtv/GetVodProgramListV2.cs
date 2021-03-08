@@ -48,7 +48,7 @@ namespace sbroennelab.nhkworldtv
             else
             {
                 // Invalid maxItems parameter
-                log.LogInformation("Invalid maxItems parameter provided for GetProgramList: {0}", maxItems);
+                log.LogError("Invalid maxItems parameter provided for GetProgramList: {0}", maxItems);
                 return new BadRequestResult();
             }
         }

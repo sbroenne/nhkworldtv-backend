@@ -9,19 +9,46 @@ using System.Threading.Tasks;
 namespace sbroennelab.nhkworldtv
 {
 
-    public class CacheEpisode
-    {
-        public string P1080P { get; set; }
-        public string P720P { get; set; }
-        public string OnAir { get; set; }
-    }
-
     /// <summary>
     /// Get list of programs
     /// </summary>
     public static class VodProgramList
     {
 
+
+        /// <summary>
+        /// Get a list of program meta data from CosmosDB - API Version 2
+        /// </summary>
+        /// <param name="maxItems">Number of programs to return</param>
+        /// <returns>Minimal JSON with just the 1080p and 720p Url plus the onAir-Timestamp </returns>
+        public static async Task<string> GetProgramList(int maxItems)
+        {
+            var cacheEpisodeDict = new Dictionary<string, CacheEpisode>();
+            var sqlQueryText = String.Format("SELECT TOP {0} c.id, c.Path1080P, c.Path720P, c.OnAir FROM c ORDER by c.LastUpdate DESC", maxItems);
+            var queryDefinition = new QueryDefinition(sqlQueryText);
+            var queryResultSetIterator = Database.VodProgram.GetItemQueryIterator<VodProgram>(queryDefinition);
+            var baseUrl = "https://nhkw-mzvod.akamaized.net/www60/mz-nhk10/_definst_/mp4:mm/flvmedia/5905";
+
+            while (queryResultSetIterator.HasMoreResults)
+            {
+                var currentResultSet = await queryResultSetIterator.ReadNextAsync();
+                foreach (VodProgram program in currentResultSet)
+                {
+                    var cacheEpisode = new CacheEpisode();
+                    string vodId = program.VodId;
+                    /// Some episodes do not have a 1080P file
+                    if (program.Path1080P != null)
+                        cacheEpisode.P1080P = program.Path1080P.Replace(baseUrl, "");
+
+                    cacheEpisode.P720P = program.Path720P.Replace(baseUrl, "");
+                    cacheEpisode.OnAir = program.OnAir;
+                    cacheEpisodeDict.Add(vodId, cacheEpisode);
+                }
+            }
+
+            string jsonString = JsonConvert.SerializeObject(cacheEpisodeDict);
+            return (jsonString);
+        }
 
         /// <summary>
         /// Populates CosmosDB with the latest list of programs
@@ -90,40 +117,12 @@ namespace sbroennelab.nhkworldtv
             return (true);
 
         }
+    }
 
-
-        /// <summary>
-        /// Get a list of program meta data from CosmosDB - API Version 2
-        /// </summary>
-        /// <param name="maxItems">Number of programs to return</param>
-        /// <returns>Minimal JSON with just the 1080p and 720p Url plus the onAir-Timestamp </returns>
-        public static async Task<string> GetProgramList(int maxItems)
-        {
-            var cacheEpisodeDict = new Dictionary<string, CacheEpisode>();
-            var sqlQueryText = String.Format("SELECT TOP {0} c.id, c.Path1080P, c.Path720P, c.OnAir FROM c ORDER by c.LastUpdate DESC", maxItems);
-            var queryDefinition = new QueryDefinition(sqlQueryText);
-            var queryResultSetIterator = Database.VodProgram.GetItemQueryIterator<VodProgram>(queryDefinition);
-            var baseUrl = "https://nhkw-mzvod.akamaized.net/www60/mz-nhk10/_definst_/mp4:mm/flvmedia/5905";
-
-            while (queryResultSetIterator.HasMoreResults)
-            {
-                var currentResultSet = await queryResultSetIterator.ReadNextAsync();
-                foreach (VodProgram program in currentResultSet)
-                {
-                    var cacheEpisode = new CacheEpisode();
-                    string vodId = program.VodId;
-                    /// Some episodes do not have a 1080P file
-                    if (program.Path1080P != null)
-                        cacheEpisode.P1080P = program.Path1080P.Replace(baseUrl, "");
-
-                    cacheEpisode.P720P = program.Path720P.Replace(baseUrl, "");
-                    cacheEpisode.OnAir = program.OnAir;
-                    cacheEpisodeDict.Add(vodId, cacheEpisode);
-                }
-            }
-
-            string jsonString = JsonConvert.SerializeObject(cacheEpisodeDict);
-            return (jsonString);
-        }
+    public class CacheEpisode
+    {
+        public string OnAir { get; set; }
+        public string P1080P { get; set; }
+        public string P720P { get; set; }
     }
 }

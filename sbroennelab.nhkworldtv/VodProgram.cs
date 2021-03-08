@@ -14,44 +14,100 @@ namespace sbroennelab.nhkworldtv
     /// </summary>
     public class VodProgram
     {
+        // Create a static clients
+        private static HttpClient AkamaiHttpClient = new HttpClient();
+
+        private ILogger log;
+
+        /// <summary>Initializes a new instance of the <see cref="VodProgram" /> class.</summary>
+        /// <param name="vodId">The Id of the program/episode</param>
+        /// <param name="Logger">The logger.</param>
         public VodProgram(string vodId, ILogger Logger)
         {
             VodId = vodId;
             LastUpdate = DateTime.UtcNow;
             PartitionKey = "default";
             log = Logger;
-
         }
 
+        /// <summary>Initializes a new instance of the <see cref="VodProgram" /> class. Only used when serialized to JSON.</summary>
         [JsonConstructor]
         public VodProgram()
         {
             // Only used when serialized to JSON
         }
+        public string Aspect { get; set; }
 
+        public string Duration { get; set; }
 
-        ILogger log;
+        public Boolean HasReferenceFile { get; set; }
+
+        public string Height { get; set; }
+
+        public DateTime LastUpdate { get; set; }
+
+        public string OnAir { get; set; }
+
+        public string PartitionKey { get; }
+
+        public string Path1080P { get; set; }
+
+        public string Path720P { get; set; }
+
+        public string PgmNo { get; set; }
+
+        public string Plot { get; set; }
+
+        public string ProgramUuid { get; set; }
+
+        public string Title { get; set; }
 
         [JsonProperty(PropertyName = "id")]
         public string VodId { get; set; }
-        public string PartitionKey { get; }
-        public string ProgramUuid { get; set; }
-        public string Path720P { get; set; }
-        public string Path1080P { get; set; }
-        public string Aspect { get; set; }
         public string Width { get; set; }
-        public string Height { get; set; }
-        public string Title { get; set; }
-        public string Plot { get; set; }
-        public string PgmNo { get; set; }
-        public string OnAir { get; set; }
-        public string Duration { get; set; }
-        public Boolean HasReferenceFile { get; set; }
-        public DateTime LastUpdate { get; set; }
+        /// <summary>
+        /// Delete the entity
+        /// </summary>
+        public async Task<bool> Delete()
+        {
+            try
+            {
+                // Delete an item in the container
+                ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.DeleteItemAsync<VodProgram>(this.VodId, new PartitionKey(this.PartitionKey));
+                log.LogDebug(String.Format("Delete episode from CosmosDB : {0}", this.VodId));
+                return true;
+            }
+            catch (CosmosException ex)
+            {
+                // Couldn't delete it, log it!
+                log.LogError(String.Format("Delete failure: {0} - Status code: {1}", this.VodId, ex.StatusCode));
+                throw;
+            }
+        }
 
-        // Create a static clients
-        private static HttpClient AkamaiHttpClient = new HttpClient();
-
+        /// <summary>
+        /// Get the VodProgram - either from Cosmos or directly from NHK
+        /// </summary>
+        public async Task<bool> Get()
+        {
+            // Retrieve Program from CosmosDB
+            if (await this.Load())
+            {
+                // Already in CosmosDB
+                return true;
+            }
+            // Get from NHK
+            else if (await this.GetFromNHK())
+            {
+                // Save it to CosmosDB
+                return await this.Save();
+            }
+            else
+            {
+                // Couldn"t find it in CosmosDB and NHK
+                return false;
+            }
+        }
 
         /// <summary>
         /// Get all the assets (video) information (e.g. PlayPath)
@@ -62,14 +118,12 @@ namespace sbroennelab.nhkworldtv
             {
                 log.LogError("ProgramUuid IS NOT SET - cannot retrieve ReferenceFile");
                 return false;
-
             }
             var asset = await NhkApi.GetAsset(this.ProgramUuid, log);
             if (asset != null)
             {
                 var referenceFile = (JObject)asset["referenceFile"];
                 var assetFiles = (JArray)asset["assetFiles"];
-
 
                 // Collect all the information to create an M3U8 file
                 var bitrate = String.Empty;
@@ -124,7 +178,6 @@ namespace sbroennelab.nhkworldtv
             {
                 return false;
             }
-
         }
 
         /// <summary>
@@ -158,9 +211,7 @@ namespace sbroennelab.nhkworldtv
                 this.Duration = "0";
                 return true;
             }
-
         }
-
 
         /// <summary>
         /// Gets all the program details from NHK
@@ -176,14 +227,11 @@ namespace sbroennelab.nhkworldtv
                 {
                     if (await GetEpisodeDetail())
                         success = true;
-
                 }
             }
 
             return success;
         }
-
-
 
         /// <summary>
         /// Load the program from CosmosDB
@@ -192,7 +240,7 @@ namespace sbroennelab.nhkworldtv
         {
             try
             {
-                // Read the item to see if it exists.  
+                // Read the item to see if it exists.
                 VodProgram item = await Database.VodProgram.ReadItemAsync<VodProgram>(this.VodId, new PartitionKey(this.PartitionKey));
                 this.OnAir = item.OnAir;
                 this.PgmNo = item.PgmNo;
@@ -211,7 +259,7 @@ namespace sbroennelab.nhkworldtv
             }
             catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
-                log.LogInformation(String.Format("Episode does not exist in CosmosDB : {0}", this.VodId));
+                log.LogDebug(String.Format("Episode does not exist in CosmosDB : {0}", this.VodId));
                 return false;
             }
             catch (CosmosException ex)
@@ -219,10 +267,8 @@ namespace sbroennelab.nhkworldtv
                 // Unexpected exception
                 log.LogError(String.Format("Unexpected: Couldn't load episode from CosmosDB : {0} - Status code: {1}", this.VodId, ex.StatusCode));
                 throw;
-
             }
         }
-
 
         /// <summary>
         /// Save the entity if it does not exist yet‚
@@ -231,64 +277,18 @@ namespace sbroennelab.nhkworldtv
         {
             try
             {
-                // Read the item to see if it exists.  
+                // Read the item to see if it exists.
                 ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.ReadItemAsync<VodProgram>(this.VodId, new PartitionKey(this.PartitionKey));
-                log.LogInformation(String.Format("Update episode in CosmosDB : {0}", this.VodId));
+                log.LogDebug(String.Format("Update episode in CosmosDB : {0}", this.VodId));
                 return true;
             }
             catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
                 // Create an item in the container
                 ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.CreateItemAsync<VodProgram>(this, new PartitionKey(this.PartitionKey));
-                log.LogInformation(String.Format("Insert episode in CosmosDB : {0}", this.VodId));
+                log.LogDebug(String.Format("Insert episode in CosmosDB : {0}", this.VodId));
                 return true;
             }
         }
-
-        /// <summary>
-        /// Delete the entity
-        /// </summary>
-        public async Task<bool> Delete()
-        {
-            try
-            {
-                // Delete an item in the container
-                ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.DeleteItemAsync<VodProgram>(this.VodId, new PartitionKey(this.PartitionKey));
-                log.LogInformation(String.Format("Delete episode from CosmosDB : {0}", this.VodId));
-                return true;
-            }
-            catch (CosmosException ex)
-            {
-                // Couldn't delete it, log it!
-                log.LogError(String.Format("Delete failure: {0} - Status code: {1}", this.VodId, ex.StatusCode));
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Get the VodProgram - either from Cosmos or directly from NHK
-        /// </summary>
-        public async Task<bool> Get()
-        {
-            // Retrieve Program from CosmosDB
-            if (await this.Load())
-            {
-                // Already in CosmosDB
-                return true;
-            }
-            // Get from NHK
-            else if (await this.GetFromNHK())
-            {
-                // Save it to CosmosDB
-                return await this.Save();
-            }
-            else
-            {
-                // Couldn"t find it in CosmosDB and NHK
-                return false;
-            }
-
-        }
-
     }
 }
