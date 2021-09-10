@@ -33,8 +33,8 @@ The function app has been deployed to Azure in West Europe (I live in Germany)
 
 There are two functions:
 
-- https://nhkworldtvwe.azurewebsites.net/api/Program/v2/List/{maxItems} - returns a JSON with the paths (1080P and 720P) for the episodes of the video-on-demand programs
-- PopulateCache - runs on a timer to update the the episode information in CosmosDB 
+- [https://nhkworldtvwe.azurewebsites.net/api/Program/v2/List/{maxItems}](https://nhkworldtvwe.azurewebsites.net/api/Program/v2/List/200) - returns a JSON with the paths (1080P and 720P) for the episodes of the video-on-demand programs
+- PopulateCache - runs on a timer to update the the episode information in CosmosDB
 
 You need a key to access the functions in order to prevent abuse by bots.
 
@@ -78,4 +78,3 @@ You will need to add the following Application Settings in your function app:
     "slotSetting": false
   }
 ```
-
