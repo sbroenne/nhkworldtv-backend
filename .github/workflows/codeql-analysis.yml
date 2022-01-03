@@ -13,10 +13,8 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [master]
-  pull_request:
-    # The branches below must be a subset of the branches above
-    branches: [master]
+    paths:
+      - "**.cs"
   schedule:
     - cron: "27 10 * * 1"
 
@@ -52,7 +50,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: "6.0"
+          dotnet-version: "6.x"
 
       # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
       # If this step fails, then you should remove it and run the build manually (see below)
