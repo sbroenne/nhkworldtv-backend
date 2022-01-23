@@ -32,9 +32,9 @@ namespace sbroennelab.nhkworldtv
             await blobClient.UploadAsync(new MemoryStream(Encoding.UTF8.GetBytes(jsonContent)), overwrite: true);
 
 
-            // Populate Cache runs every two hours
-            // Set cache-control to two hours
-            int expirySeconds = 2 * 60 * 60;
+            // Populate Cache runs every four hours
+            // Set cache-control to four hours
+            int expirySeconds = 4 * 60 * 60;
             string cacheControl = String.Format("public, max-age={0}", expirySeconds);
 
             // Create headers

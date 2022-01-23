@@ -9,7 +9,7 @@ namespace sbroennelab.nhkworldtv
     {
 
         [FunctionName("UpdateBlob")]
-        public static async Task Run([TimerTrigger("0 0 */2 * * *")] TimerInfo myTimer, ILogger log)
+        public static async Task Run([TimerTrigger("0 0 */4 * * *")] TimerInfo myTimer, ILogger log)
         {
             var success = await JsonBlob.Create(log);
         }
