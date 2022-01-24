@@ -16,7 +16,7 @@ namespace sbroennelab.nhkworldtv
 
         private static string containerName = "program-list-v2";
 
-        public static async Task<Boolean> Create(ILogger log)
+        public static async Task<Boolean> Create(int expiryHours, ILogger log)
         {
 
             string fileName = "cache.json";
@@ -31,11 +31,10 @@ namespace sbroennelab.nhkworldtv
             // Upload it
             await blobClient.UploadAsync(new MemoryStream(Encoding.UTF8.GetBytes(jsonContent)), overwrite: true);
 
-
             // Populate Cache runs every four hours
             // Set cache-control to four hours
-            int expirySeconds = 4 * 60 * 60;
-            string cacheControl = String.Format("public, max-age={0}", expirySeconds);
+            int expirySeconds = expiryHours * 60 * 60;
+            string cacheControl = String.Format("max-age={0}", expirySeconds);
 
             // Create headers
             BlobHttpHeaders headers = new BlobHttpHeaders
