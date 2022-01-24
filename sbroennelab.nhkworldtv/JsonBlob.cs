@@ -26,7 +26,7 @@ namespace sbroennelab.nhkworldtv
             BlobClient blobClient = containerClient.GetBlobClient(fileName);
 
             // Get the program cache
-            var jsonContent = await VodProgramList.GetProgramList(2000);
+            var jsonContent = await VodProgramList.GetProgramList(3000);
 
             // Upload it
             await blobClient.UploadAsync(new MemoryStream(Encoding.UTF8.GetBytes(jsonContent)), overwrite: true);
@@ -47,6 +47,8 @@ namespace sbroennelab.nhkworldtv
 
             // Set the blob's properties
             await blobClient.SetHttpHeadersAsync(headers);
+
+            log.LogInformation(String.Format("Uploaded {0} blob - size:{1}", fileName, jsonContent.Length));
 
             return true;
         }
