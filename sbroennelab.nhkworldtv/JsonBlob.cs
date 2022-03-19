@@ -48,7 +48,7 @@ namespace sbroennelab.nhkworldtv
             // Set the blob's properties
             await blobClient.SetHttpHeadersAsync(headers);
 
-            log.LogInformation(String.Format("Uploaded {0} blob - size:{1}", fileName, jsonContent.Length));
+            log.LogInformation(String.Format("Uploaded {0} blob - size: {1}", fileName, jsonContent.Length));
 
             return true;
         }
