@@ -27,7 +27,7 @@ That was the easiest, most cost effective (because of CosmosDB free tier and ser
 
 ## 1.4. Azure Functions
 
-Azure Functions are implemented in [sbroennelab.nhkworldtv](./sbroennelab.nhkworldtv) .Net Core 3.1 project using Azure Functions v3 in C#. The Unit Tests can be found in [sbroennelab.nhkworldtv.Tests](./sbroennelab.nhkworldtv.Tests) project (I am using xUnit).
+Azure Functions are implemented in [sbroennelab.nhkworldtv](./sbroennelab.nhkworldtv) .Net 6 project using Azure Functions v4 in C#. The Unit Tests can be found in [sbroennelab.nhkworldtv.Tests](./sbroennelab.nhkworldtv.Tests) project (I am using xUnit).
 
 The function app has been deployed to Azure in West Europe (I live in Germany)
 
@@ -44,13 +44,13 @@ There is a an ARM template you can deploy in [sbroennelab.nhkworldtv/arm/cosmosd
 
 ## 1.6. Development Environment
 
-I develop with Visual Studio Code on a Windows 10 box using WSL2 running Ubuntu (remote/WLS2 based development).
+I develop with Visual Studio Code on a Windows 11 box using WSL2 running Ubuntu (remote/WLS2 based development).
 
 I use the Azurite extension instead of the Azure Storage Emulator.
 
-**Important hint while unit testing**: You need to set the application setting as Environment variables in **Windows 10/WSLv2** if you want to run the unit tests from the test runner (in my case .NET Test Explorer). Otherwise the functions will not find them - even though they are defined and used in local.settings.json.
+**Important hint while unit testing**: You need to set the application setting as Environment variables in **Windows 11/WSLv2** if you want to run the unit tests from the test runner (in my case .NET Test Explorer). Otherwise the functions will not find them - even though they are defined and used in local.settings.json.
 
-It is a pure .Net Core solution so you should be able to use any DEV environment you prefer. I also tested it on Visual Studio 2019.
+It is a pure .Net 6 solution so you should be able to use any DEV environment you prefer. I also tested it on Visual Studio 2022.
 
 ## 1.7. Deployment on Azure
 
