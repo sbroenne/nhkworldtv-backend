@@ -15,9 +15,9 @@ namespace sbroennelab.nhkworldtv
     public class VodProgram
     {
         // Create a static clients
-        private static HttpClient AkamaiHttpClient = new HttpClient();
+        private static readonly HttpClient AkamaiHttpClient = new();
 
-        private ILogger log;
+        private readonly ILogger log;
 
         /// <summary>Initializes a new instance of the <see cref="VodProgram" /> class.</summary>
         /// <param name="vodId">The Id of the program/episode</param>
@@ -74,13 +74,13 @@ namespace sbroennelab.nhkworldtv
             {
                 // Delete an item in the container
                 ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.DeleteItemAsync<VodProgram>(this.VodId, new PartitionKey(this.PartitionKey));
-                log.LogDebug(String.Format("Delete episode from CosmosDB : {0}", this.VodId));
+                log.LogDebug("Delete episode from CosmosDB : {0}", this.VodId);
                 return true;
             }
             catch (CosmosException ex)
             {
                 // Couldn't delete it, log it!
-                log.LogError(String.Format("Delete failure: {0} - Status code: {1}", this.VodId, ex.StatusCode));
+                log.LogError("Delete failure: {0} - Status code: {1}", this.VodId, ex.StatusCode);
                 throw;
             }
         }
@@ -259,13 +259,13 @@ namespace sbroennelab.nhkworldtv
             }
             catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
-                log.LogDebug(String.Format("Episode does not exist in CosmosDB : {0}", this.VodId));
+                log.LogDebug("Episode does not exist in CosmosDB : {0}", this.VodId);
                 return false;
             }
             catch (CosmosException ex)
             {
                 // Unexpected exception
-                log.LogError(String.Format("Unexpected: Couldn't load episode from CosmosDB : {0} - Status code: {1}", this.VodId, ex.StatusCode));
+                log.LogError("Unexpected: Couldn't load episode from CosmosDB : {0} - Status code: {1}", this.VodId, ex.StatusCode);
                 throw;
             }
         }
@@ -279,14 +279,14 @@ namespace sbroennelab.nhkworldtv
             {
                 // Read the item to see if it exists.
                 ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.ReadItemAsync<VodProgram>(this.VodId, new PartitionKey(this.PartitionKey));
-                log.LogDebug(String.Format("Update episode in CosmosDB : {0}", this.VodId));
+                log.LogDebug("Update episode in CosmosDB : {0}", this.VodId);
                 return true;
             }
             catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
                 // Create an item in the container
                 ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.CreateItemAsync<VodProgram>(this, new PartitionKey(this.PartitionKey));
-                log.LogDebug(String.Format("Insert episode in CosmosDB : {0}", this.VodId));
+                log.LogDebug("Insert episode in CosmosDB : {0}", this.VodId);
                 return true;
             }
         }

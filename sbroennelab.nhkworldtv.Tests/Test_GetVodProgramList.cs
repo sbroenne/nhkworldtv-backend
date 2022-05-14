@@ -9,10 +9,8 @@ namespace sbroennelab.nhkworldtv.Tests
     [Collection("VOD collection")]
     public class Test_GetVodProgramList
     {
-        private ILogger logger = (ListLogger)TestFactory.CreateLogger(LoggerTypes.List);
-
-
-        VodFixture fixture;
+        private readonly ILogger logger = (ListLogger)TestFactory.CreateLogger(LoggerTypes.List);
+        readonly VodFixture fixture;
         public Test_GetVodProgramList(VodFixture fixture)
         {
             this.fixture = fixture;

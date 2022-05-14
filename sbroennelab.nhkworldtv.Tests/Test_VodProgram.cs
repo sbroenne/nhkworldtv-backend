@@ -11,9 +11,8 @@ namespace sbroennelab.nhkworldtv.Tests
     [Collection("VOD collection")]
     public class Test_VodProgram
     {
-        private ILogger logger = (ListLogger)TestFactory.CreateLogger(LoggerTypes.List);
-
-        VodFixture fixture;
+        private readonly ILogger logger = (ListLogger)TestFactory.CreateLogger(LoggerTypes.List);
+        readonly VodFixture fixture;
         public Test_VodProgram(VodFixture fixture)
         {
             this.fixture = fixture;

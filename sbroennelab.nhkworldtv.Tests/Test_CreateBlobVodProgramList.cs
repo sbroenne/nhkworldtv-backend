@@ -9,7 +9,7 @@ namespace sbroennelab.nhkworldtv.Tests
 
     public class Test_JsonBlob
     {
-        private ILogger logger = (ListLogger)TestFactory.CreateLogger(LoggerTypes.List);
+        private readonly ILogger logger = (ListLogger)TestFactory.CreateLogger(LoggerTypes.List);
 
 
         [Fact]

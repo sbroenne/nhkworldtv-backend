@@ -11,14 +11,13 @@ namespace sbroennelab.nhkworldtv.Tests
     [Collection("VOD collection")]
     public class Test_NhkApi
     {
-
-        VodFixture fixture;
+        readonly VodFixture fixture;
         public Test_NhkApi(VodFixture fixture)
         {
             this.fixture = fixture;
         }
 
-        private ILogger logger = (ListLogger)TestFactory.CreateLogger(LoggerTypes.List);
+        private readonly ILogger logger = (ListLogger)TestFactory.CreateLogger(LoggerTypes.List);
 
 
         [Fact]

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace sbroennelab.nhkworldtv
 {
 
-    public static class UpdateBlob
+    public static class TriggerUpdateBlob
     {
 
         [FunctionName("UpdateBlob")]

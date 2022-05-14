@@ -10,7 +10,7 @@ namespace sbroennelab.nhkworldtv
 
         public static string ContainerVodProgram = GetEnvironmentVariable("DATABSE_CONTAINER_VOD_PROGRAM");
 
-        public static CosmosClient DatabaseClient = new CosmosClient(GetEnvironmentVariable("ENDPOINT_URL"), GetEnvironmentVariable("COSMOS_ACCOUNT_KEY"));
+        public static CosmosClient DatabaseClient = new(GetEnvironmentVariable("ENDPOINT_URL"), GetEnvironmentVariable("COSMOS_ACCOUNT_KEY"));
 
         // CosmosDB
         public static string DatabaseId = GetEnvironmentVariable("DATABASE_ID");

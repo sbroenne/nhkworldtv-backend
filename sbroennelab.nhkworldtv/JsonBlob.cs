@@ -1,10 +1,10 @@
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
 
 
 namespace sbroennelab.nhkworldtv
@@ -12,16 +12,16 @@ namespace sbroennelab.nhkworldtv
     public class JsonBlob
     /// Creates cache.json file that contains the program cache on Azure Storage
     {
-        private static string connectionString = System.Environment.GetEnvironmentVariable("BLOB_CONNECTION_STRING", EnvironmentVariableTarget.Process);
+        private static readonly string connectionString = System.Environment.GetEnvironmentVariable("BLOB_CONNECTION_STRING", EnvironmentVariableTarget.Process);
 
-        private static string containerName = "program-list-v2";
+        private static readonly string containerName = "program-list-v2";
 
         public static async Task<Boolean> Create(int expiryHours, ILogger log)
         {
 
             string fileName = "cache.json";
 
-            BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
+            BlobServiceClient blobServiceClient = new(connectionString);
             BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
             BlobClient blobClient = containerClient.GetBlobClient(fileName);
 
@@ -34,10 +34,10 @@ namespace sbroennelab.nhkworldtv
             // Populate Cache runs every four hours
             // Set cache-control to four hours
             int expirySeconds = expiryHours * 60 * 60;
-            string cacheControl = String.Format("max-age={0}", expirySeconds);
+            string cacheControl = $"max-age={expirySeconds}";
 
             // Create headers
-            BlobHttpHeaders headers = new BlobHttpHeaders
+            BlobHttpHeaders headers = new()
             {
                 // Set the MIME ContentType every time the properties 
                 // are updated or the field will be cleared
@@ -48,7 +48,7 @@ namespace sbroennelab.nhkworldtv
             // Set the blob's properties
             await blobClient.SetHttpHeadersAsync(headers);
 
-            log.LogInformation(String.Format("Uploaded {0} blob - size: {1}", fileName, jsonContent.Length));
+            log.LogInformation("Uploaded {0} blob - size: {1}", fileName, jsonContent.Length);
 
             return true;
         }

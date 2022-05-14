@@ -10,7 +10,7 @@ namespace sbroennelab.nhkworldtv
     /// <summary>
     /// Azure Function GetVodProgramListV2
     /// </summary>
-    public static class GetVodProgramListV2
+    public static class TriggerGetVodProgramListV2
     {
         /// <summary>
         /// Get a list of minimal program meta data from the backend cache - Version 2

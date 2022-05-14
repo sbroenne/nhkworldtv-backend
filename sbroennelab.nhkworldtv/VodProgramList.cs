@@ -24,7 +24,7 @@ namespace sbroennelab.nhkworldtv
         public static async Task<string> GetProgramList(int maxItems)
         {
             var cacheEpisodeDict = new Dictionary<string, CacheEpisode>();
-            var sqlQueryText = String.Format("SELECT TOP {0} c.id, c.Path1080P, c.Path720P, c.OnAir FROM c ORDER by c.LastUpdate DESC", maxItems);
+            var sqlQueryText = $"SELECT TOP {maxItems} c.id, c.Path1080P, c.Path720P, c.OnAir FROM c ORDER by c.LastUpdate DESC";
             var queryDefinition = new QueryDefinition(sqlQueryText);
             var queryResultSetIterator = Database.VodProgram.GetItemQueryIterator<VodProgram>(queryDefinition);
             var baseUrl = "https://nhkw-mzvod.akamaized.net/www60/mz-nhk10/_definst_/mp4:mm/flvmedia/5905";
@@ -61,7 +61,7 @@ namespace sbroennelab.nhkworldtv
 
             // Get the existing entries from CosmosDB
             var sqlQueryText = "SELECT c.id FROM c";
-            QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
+            QueryDefinition queryDefinition = new(sqlQueryText);
             FeedIterator<VodProgram> queryResultSetIterator = Database.VodProgram.GetItemQueryIterator<VodProgram>(queryDefinition);
 
 
@@ -112,7 +112,7 @@ namespace sbroennelab.nhkworldtv
                 }
             }
 
-            log.LogInformation(String.Format("Inserted {0} - deleted {1} episodes from CosmosDB", insertCounter, deleteCounter));
+            log.LogInformation("Inserted {0} - deleted {1} episodes from CosmosDB", insertCounter, deleteCounter);
 
             return (true);
 

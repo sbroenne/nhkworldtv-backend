@@ -9,17 +9,6 @@ namespace sbroennelab.nhkworldtv.Tests
 {
     public class TestFactory
     {
-        public static IEnumerable<object[]> Data()
-        {
-            return new List<object[]>
-            {
-                new object[] { "name", "Bill" },
-                new object[] { "name", "Paul" },
-                new object[] { "name", "Steve" }
-
-            };
-        }
-
         private static Dictionary<string, StringValues> CreateDictionary(string key, string value)
         {
             var qs = new Dictionary<string, StringValues>
