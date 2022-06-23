@@ -13,16 +13,8 @@ namespace sbroennelab.nhkworldtv.Tests
             ILogger logger = (ListLogger)TestFactory.CreateLogger(LoggerTypes.List);
 
             // Hardcoded Ids
-            VodId = "nw_vod_v_en_2061_516_20220514013000_01_1652461456";
-            ProgramUuid = "my4mrx00";
-
-            /*   // This is bad unit test practice but I need to get a VodId from NHK to set-up the tests since they are not static and expire
-              var taskVodIdList = Task.Run(() => NhkApi.GetVodIdList(logger));
-              var vodIdList = taskVodIdList.Result;
-              VodId = vodIdList[0];
-              var taskProgramUuid = Task.Run(() => NhkApi.GetProgramUuid(this.VodId));
-              ProgramUuid = taskProgramUuid.Result;
-          */
+            VodId = "nw_vod_v_en_2058_916_20220623101500_01_1655948082";
+            ProgramUuid = "iv681ycz";
         }
 
         public void Dispose()

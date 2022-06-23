@@ -15,11 +15,9 @@ namespace sbroennelab.nhkworldtv
     {
         // Create static classes so that they will be re-used between calls
 
-        public static string NHK_API_KEY = "EJfK8jdS57GqlupFgAfAAwr573q01y6k";
+        private static readonly string NHK_ALL_EPISODES_URL = "https://nwapi.nhk.jp/nhkworld/vodesdlist/v7b/all/all/en/all/all.json";
 
-        private static readonly string NHK_ALL_EPISODES_URL = "https://api.nhk.or.jp/nhkworld/vodesdlist/v7a/all/all/en/all/all.json?apikey={0}";
-
-        private static readonly string NHK_GET_EPISODE_DETAIL_URL = "https://api.nhk.or.jp/nhkworld/vodesdlist/v7a/vod_id/{0}/en/all/1.json?apikey={1}";
+        private static readonly string NHK_GET_EPISODE_DETAIL_URL = "https://nwapi.nhk.jp/nhkworld/vodesdlist/v7b/vod_id/{0}/en/all/1.json";
 
         // NHK APIs
         private static readonly string NHK_PLAYER_URL = "https://movie-s.nhk.or.jp/v/refid/nhkworld/prefid/{0}?embed=js&targetId=videoplayer&de-responsive=true&de-callback-method=nwCustomCallback&de-appid={1}&de-subtitle-on=false";
@@ -76,7 +74,7 @@ namespace sbroennelab.nhkworldtv
         /// </summary>
         public static async Task<JObject> GetEpisode(string VodId, ILogger log)
         {
-            string episodeUrl = String.Format(NHK_GET_EPISODE_DETAIL_URL, VodId, NHK_API_KEY);
+            string episodeUrl = String.Format(NHK_GET_EPISODE_DETAIL_URL, VodId);
             try
             {
                 var response = await NHKHttpClient.GetAsync(episodeUrl);
@@ -158,7 +156,7 @@ namespace sbroennelab.nhkworldtv
         /// <returns>List&lt;string&gt; of VodIds</returns>
         public static async Task<List<string>> GetVodIdList(ILogger log)
         {
-            string getAllEpisodes = String.Format(NHK_ALL_EPISODES_URL, NHK_API_KEY);
+            string getAllEpisodes = NHK_ALL_EPISODES_URL;
             log.LogInformation("Getting Episode List from NHK");
             try
             {

@@ -30,7 +30,8 @@ namespace sbroennelab.nhkworldtv.Tests
         [Fact]
         public async void Test_GetProgramUuid()
         {
-            Assert.NotNull(await NhkApi.GetProgramUuid(fixture.VodId, logger));
+            var programUuid = await NhkApi.GetProgramUuid(fixture.VodId, logger);
+            Assert.NotNull(programUuid);
         }
 
 
