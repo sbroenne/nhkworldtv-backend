@@ -1,5 +1,6 @@
 using Microsoft.Azure.Cosmos;
 using System;
+using Azure.Identity;
 
 namespace sbroennelab.nhkworldtv
 {
@@ -8,14 +9,14 @@ namespace sbroennelab.nhkworldtv
     public static class Database
     {
 
-        public static string ContainerVodProgram = GetEnvironmentVariable("DATABSE_CONTAINER_VOD_PROGRAM");
+        private static readonly string ContainerVodProgram = GetEnvironmentVariable("DATABASE_CONTAINER_VOD_PROGRAM");
 
-        public static CosmosClient DatabaseClient = new(GetEnvironmentVariable("ENDPOINT_URL"), GetEnvironmentVariable("COSMOS_ACCOUNT_KEY"));
+        private static readonly CosmosClient DatabaseClient = new(GetEnvironmentVariable("ENDPOINT_URL"), new DefaultAzureCredential());
 
         // CosmosDB
-        public static string DatabaseId = GetEnvironmentVariable("DATABASE_ID");
+        private static readonly string DatabaseId = GetEnvironmentVariable("DATABASE_ID");
 
-        public static Container VodProgram = DatabaseClient.GetContainer(DatabaseId, ContainerVodProgram);
+        public static readonly Container VodProgram = DatabaseClient.GetContainer(DatabaseId, ContainerVodProgram);
 
         public static string GetEnvironmentVariable(string name)
         {

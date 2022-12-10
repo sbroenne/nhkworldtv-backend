@@ -38,6 +38,8 @@ There are two Timer-Trigger functions:
 
 There used to be a public API for getting the program list but this has been retired in favour of the Azure Storage solution. If you need to access the file out-side the addon, here is the [link](https://nhkworldtv.azureedge.net/program-list-v2/cache.json).
 
+The Azure function use its system-managed identity to access Cosmos DB and the storage account.
+
 ## 1.5. CosmosDB Set-up
 
 There is a an ARM template you can deploy in [sbroennelab.nhkworldtv/arm/cosmosdb-nhkdb](.sbroennelab.nhkworldtv/arm/cosmosdb-nhkdb). It will create the CosmosDB **nhkdb** in the resource group **nhkworldtv** in **West Europe** ny default. It will create a container **VodProgram**.
@@ -58,17 +60,18 @@ You will need to add the following Application Settings in your function app:
 
 ```
   {
-    "name": "COSMOS_ACCOUNT_KEY",
-    "value": "<your Cosmos Account Key value>",
+    "name": "BLOB_NAME",
+    "value": nhkworldtv",
     "slotSetting": false
   },
+
   {
     "name": "DATABASE_ID",
     "value": "<your CosmosDB database value>",
     "slotSetting": false
   },
   {
-    "name": "DATABSE_CONTAINER_VOD_PROGRAM",
+    "name": "DATABASE_CONTAINER_VOD_PROGRAM",
     "value": "VodProgram",
     "slotSetting": false
   },

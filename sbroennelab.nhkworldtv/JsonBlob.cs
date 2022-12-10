@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Identity;
 
 
 namespace sbroennelab.nhkworldtv
@@ -12,17 +13,21 @@ namespace sbroennelab.nhkworldtv
     public class JsonBlob
     /// Creates cache.json file that contains the program cache on Azure Storage
     {
-        private static readonly string connectionString = System.Environment.GetEnvironmentVariable("BLOB_CONNECTION_STRING", EnvironmentVariableTarget.Process);
+        // Construct the blob container endpoint from the arguments.
+        private static readonly string containerEndpoint = string.Format("https://{0}.blob.core.windows.net/{1}",
+                                                    Environment.GetEnvironmentVariable("BLOB_NAME", EnvironmentVariableTarget.Process),
+                                                "program-list-v2");
 
-        private static readonly string containerName = "program-list-v2";
+        // Get a credential and create a service client object for the blob container.
+        private static readonly BlobContainerClient containerClient = new BlobContainerClient(new Uri(containerEndpoint),
+                                                                        new DefaultAzureCredential());
+
 
         public static async Task<Boolean> Create(int expiryHours, ILogger log)
         {
 
             string fileName = "cache.json";
 
-            BlobServiceClient blobServiceClient = new(connectionString);
-            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
             BlobClient blobClient = containerClient.GetBlobClient(fileName);
 
             // Get the program cache
