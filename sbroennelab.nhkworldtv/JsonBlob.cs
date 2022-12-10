@@ -27,13 +27,15 @@ namespace sbroennelab.nhkworldtv
         {
 
             string fileName = "cache.json";
-
+            log.LogInformation($"Creating cache file {fileName} file on storage account {containerEndpoint}");
             BlobClient blobClient = containerClient.GetBlobClient(fileName);
 
             // Get the program cache
+            log.LogInformation("Getting content from CosmosDB");
             var jsonContent = await VodProgramList.GetProgramList(3000);
 
             // Upload it
+            log.LogInformation("Uploading file");
             await blobClient.UploadAsync(new MemoryStream(Encoding.UTF8.GetBytes(jsonContent)), overwrite: true);
 
             // Populate Cache runs every four hours
@@ -51,9 +53,10 @@ namespace sbroennelab.nhkworldtv
             };
 
             // Set the blob's properties
+            log.LogInformation("Updating headers");
             await blobClient.SetHttpHeadersAsync(headers);
 
-            log.LogInformation("Uploaded {0} blob - size: {1}", fileName, jsonContent.Length);
+            log.LogInformation($"Uploaded {fileName} blob - size: {jsonContent.Length}");
 
             return true;
         }
