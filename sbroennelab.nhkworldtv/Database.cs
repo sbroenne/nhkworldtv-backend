@@ -1,6 +1,6 @@
+using Azure.Identity;
 using Microsoft.Azure.Cosmos;
 using System;
-using Azure.Identity;
 
 namespace sbroennelab.nhkworldtv
 {
