@@ -9,19 +9,14 @@ namespace sbroennelab.nhkworldtv
     public static class Database
     {
 
-        private static readonly string ContainerVodProgram = GetEnvironmentVariable("DATABASE_CONTAINER_VOD_PROGRAM");
+        private static readonly string ContainerVodProgram = Environment.GetEnvironmentVariable("DATABASE_CONTAINER_VOD_PROGRAM", EnvironmentVariableTarget.Process);
 
-        private static readonly CosmosClient DatabaseClient = new(GetEnvironmentVariable("ENDPOINT_URL"), new DefaultAzureCredential());
+        private static readonly CosmosClient DatabaseClient = new(Environment.GetEnvironmentVariable("ENDPOINT_URL", EnvironmentVariableTarget.Process), new DefaultAzureCredential());
 
         // CosmosDB
-        private static readonly string DatabaseId = GetEnvironmentVariable("DATABASE_ID");
+        private static readonly string DatabaseId = Environment.GetEnvironmentVariable("DATABASE_ID", EnvironmentVariableTarget.Process);
 
         public static readonly Container VodProgram = DatabaseClient.GetContainer(DatabaseId, ContainerVodProgram);
 
-        public static string GetEnvironmentVariable(string name)
-        {
-            string envVariable = System.Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Process);
-            return envVariable;
-        }
     }
 }

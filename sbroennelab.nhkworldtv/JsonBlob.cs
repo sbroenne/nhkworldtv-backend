@@ -19,7 +19,7 @@ namespace sbroennelab.nhkworldtv
                                                 "program-list-v2");
 
         // Get a credential and create a service client object for the blob container.
-        private static readonly BlobContainerClient containerClient = new BlobContainerClient(new Uri(containerEndpoint),
+        private static readonly BlobContainerClient containerClient = new(new Uri(containerEndpoint),
                                                                         new DefaultAzureCredential());
 
 
