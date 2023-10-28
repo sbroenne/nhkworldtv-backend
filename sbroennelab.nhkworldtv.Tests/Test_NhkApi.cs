@@ -27,27 +27,28 @@ namespace sbroennelab.nhkworldtv.Tests
             Assert.True(vodIdList.Count > 0);
         }
 
+
         [Fact]
-        public async void Test_GetProgramUuid()
+        public async void Test_GetMediaInformationApiUrl()
         {
-            var programUuid = await NhkApi.GetProgramUuid(fixture.VodId, logger);
-            Assert.NotNull(programUuid);
+            var mediaInformationApiUrl = await NhkApi.GetMediaInformationApiUrl(fixture.VodId, logger);
+            Assert.NotNull(mediaInformationApiUrl);
         }
 
 
         [Fact]
-        public async void Test_GetAssets()
+        public async void Test_GetStream()
         {
-            var asset = await NhkApi.GetAsset(fixture.ProgramUuid, logger);
-            Assert.NotNull(asset);
-            Assert.IsType<JObject>(asset);
+            var stream = await NhkApi.GetStream(fixture.VodId, logger);
+            Assert.NotNull(stream);
+            Assert.IsType<Stream>(stream);
 
         }
 
         [Fact]
         public async void Test_GetEpisode()
         {
-            var episode = (await NhkApi.GetEpisode(fixture.VodId, logger));
+            var episode = await NhkApi.GetEpisode(fixture.VodId, logger);
             Assert.NotNull(episode);
             Assert.IsType<JObject>(episode);
         }

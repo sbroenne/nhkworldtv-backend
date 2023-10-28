@@ -24,6 +24,7 @@ namespace sbroennelab.nhkworldtv.Tests
             var vodProgram = new VodProgram("Unit Test Dummy", logger);
             Assert.True(await vodProgram.Save());
             vodProgram = new VodProgram(fixture.VodId, logger);
+            Assert.True(await vodProgram.Save());
             // Delete an existing VodId that should be populated again
             Assert.True(await vodProgram.Delete());
             var success = await VodProgramList.PopulateCloudCache(logger);

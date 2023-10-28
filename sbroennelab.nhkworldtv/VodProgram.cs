@@ -1,8 +1,8 @@
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -40,7 +40,7 @@ namespace sbroennelab.nhkworldtv
 
         public string Duration { get; set; }
 
-        public Boolean HasReferenceFile { get; set; }
+        public bool HasReferenceFile { get; set; }
 
         public string Height { get; set; }
 
@@ -58,8 +58,6 @@ namespace sbroennelab.nhkworldtv
 
         public string Plot { get; set; }
 
-        public string ProgramUuid { get; set; }
-
         public string Title { get; set; }
 
         [JsonProperty(PropertyName = "id")]
@@ -73,14 +71,14 @@ namespace sbroennelab.nhkworldtv
             try
             {
                 // Delete an item in the container
-                ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.DeleteItemAsync<VodProgram>(this.VodId, new PartitionKey(this.PartitionKey));
-                log.LogDebug("Delete episode from CosmosDB : {0}", this.VodId);
+                ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.DeleteItemAsync<VodProgram>(VodId, new PartitionKey(PartitionKey));
+                log.LogDebug("Delete episode from CosmosDB : {0}", VodId);
                 return true;
             }
             catch (CosmosException ex)
             {
                 // Couldn't delete it, log it!
-                log.LogError("Delete failure: {0} - Status code: {1}", this.VodId, ex.StatusCode);
+                log.LogError("Delete failure: {0} - Status code: {1}", VodId, ex.StatusCode);
                 throw;
             }
         }
@@ -91,16 +89,16 @@ namespace sbroennelab.nhkworldtv
         public async Task<bool> Get()
         {
             // Retrieve Program from CosmosDB
-            if (await this.Load())
+            if (await Load())
             {
                 // Already in CosmosDB
                 return true;
             }
             // Get from NHK
-            else if (await this.GetFromNHK())
+            else if (await GetFromNHK())
             {
                 // Save it to CosmosDB
-                return await this.Save();
+                return await Save();
             }
             else
             {
@@ -114,64 +112,18 @@ namespace sbroennelab.nhkworldtv
         /// </summary>
         public async Task<bool> GetAsset()
         {
-            if (this.ProgramUuid == null)
+            if (VodId == null)
             {
-                log.LogError("ProgramUuid IS NOT SET - cannot retrieve ReferenceFile");
+                log.LogError("vodId IS NOT SET - cannot retrieve Stream");
                 return false;
             }
-            var asset = await NhkApi.GetAsset(this.ProgramUuid, log);
-            if (asset != null)
+            var stream = await NhkApi.GetStream(VodId, log);
+            if (stream != null)
             {
-                var referenceFile = (JObject)asset["referenceFile"];
-                var assetFiles = (JArray)asset["assetFiles"];
-
-                // Collect all the information to create an M3U8 file
-                var bitrate = String.Empty;
-                var aspect = String.Empty;
-                var width = String.Empty;
-                var height = String.Empty;
-                var playPath = String.Empty;
-                var hasReferenceFile = false;
-
-                // Get the reference file (HD)
-                playPath = (string)referenceFile["rtmp"]["play_path"];
-                playPath = playPath.Split('?')[0];
-
-                // Check if reference file actually exists (sometimes it doesn't)
-                var reference_url = String.Format("https://nhkw-mzvod.akamaized.net/www60/mz-nhk10/_definst_/{0}/chunklist.m3u8", playPath);
-                var response = await AkamaiHttpClient.GetAsync(reference_url);
-                if (response.IsSuccessStatusCode)
-                {
-                    // Exists, add it and use the metadata
-                    bitrate = (string)referenceFile["videoBitrate"];
-                    aspect = (string)referenceFile["aspectRatio"];
-                    width = (string)referenceFile["videoWidth"];
-                    height = (string)referenceFile["videoHeight"];
-                    this.Path1080P = reference_url;
-                    hasReferenceFile = true;
-                }
-
-                // Get the 720P Version
-                var asset720p = assetFiles[0];
-                playPath = (string)asset720p["rtmp"]["play_path"];
-                playPath = playPath.Split('?')[0];
-                this.Path720P = String.Format("https://nhkw-mzvod.akamaized.net/www60/mz-nhk10/_definst_/{0}/chunklist.m3u8", playPath);
-
-                // If we do not have a reference file
-                // use the video information from 720P
-                if (!hasReferenceFile)
-                {
-                    bitrate = (string)asset720p["videoBitrate"];
-                    aspect = (string)asset720p["aspectRatio"];
-                    width = (string)asset720p["videoWidth"];
-                    height = (string)asset720p["videoHeight"];
-                    hasReferenceFile = false;
-                }
-
-                this.Aspect = aspect;
-                this.Width = width;
-                this.Height = height;
-                this.HasReferenceFile = hasReferenceFile;
+                Path720P = stream.meta[0].movie_url.mb_hd;
+                Width = stream.meta[0].movie_definition.mb_hd.Split(":")[0];
+                Height = stream.meta[0].movie_definition.mb_hd.Split(":")[1];
+                Aspect = Math.Round(decimal.Parse(Width) / decimal.Parse(Height), 2).ToString(CultureInfo.InvariantCulture);
                 return true;
             }
             else
@@ -185,30 +137,30 @@ namespace sbroennelab.nhkworldtv
         /// </summary>
         public async Task<bool> GetEpisodeDetail()
         {
-            if (this.VodId == null)
+            if (VodId == null)
             {
                 log.LogError("GetEpisodeDetail - VodId IS NOT SET - cannot retrieve episode details");
                 return false;
             }
 
-            var detail = await NhkApi.GetEpisode(this.VodId, log);
+            var episode = await NhkApi.GetEpisode(VodId, log);
 
-            if (detail != null)
+            if (episode != null)
             {
-                this.Title = (string)detail["title_clean"];
-                this.Plot = (string)detail["description_clean"];
-                this.PgmNo = (string)detail["pgm_no"];
-                this.OnAir = (string)detail["onair"];
-                this.Duration = (string)detail["movie_duration"];
+                Title = episode.title_clean;
+                Plot = episode.description_clean;
+                PgmNo = episode.pgm_no;
+                OnAir = episode.onair.ToString();
+                Duration = episode.movie_duration.ToString();
                 return true;
             }
             else
             {
                 // Episode lookup does not work for all Playlist episodes
                 // Set a dummy Title
-                this.Title = "From Playlist";
-                this.PgmNo = "0";
-                this.Duration = "0";
+                Title = "From Playlist";
+                PgmNo = "0";
+                Duration = "0";
                 return true;
             }
         }
@@ -219,15 +171,11 @@ namespace sbroennelab.nhkworldtv
         public async Task<bool> GetFromNHK()
         {
             bool success = false;
-            this.ProgramUuid = await NhkApi.GetProgramUuid(this.VodId, log);
 
-            if (this.ProgramUuid != null)
+            if (await GetAsset())
             {
-                if (await GetAsset())
-                {
-                    if (await GetEpisodeDetail())
-                        success = true;
-                }
+                if (await GetEpisodeDetail())
+                    success = true;
             }
 
             return success;
@@ -241,31 +189,33 @@ namespace sbroennelab.nhkworldtv
             try
             {
                 // Read the item to see if it exists.
-                VodProgram item = await Database.VodProgram.ReadItemAsync<VodProgram>(this.VodId, new PartitionKey(this.PartitionKey));
-                this.OnAir = item.OnAir;
-                this.PgmNo = item.PgmNo;
-                this.Path1080P = item.Path1080P;
-                this.Path720P = item.Path720P;
-                this.HasReferenceFile = item.HasReferenceFile;
-                this.Plot = item.Plot;
-                this.ProgramUuid = item.ProgramUuid;
-                this.Width = item.Width;
-                this.Height = item.Height;
-                this.Aspect = item.Aspect;
-                this.Duration = item.Duration;
-                this.Title = item.Title;
-                this.LastUpdate = item.LastUpdate;
+                VodProgram item = await Database.VodProgram.ReadItemAsync<VodProgram>(VodId, new PartitionKey(PartitionKey));
+                OnAir = item.OnAir;
+                PgmNo = item.PgmNo;
+                Path1080P = item.Path1080P;
+                Path720P = item.Path720P;
+                Plot = item.Plot;
+                Width = item.Width;
+                Height = item.Height;
+                Aspect = item.Aspect;
+                Duration = item.Duration;
+                Title = item.Title;
+                LastUpdate = item.LastUpdate;
+                if (item.Path1080P == null)
+                    HasReferenceFile = false;
+                else
+                    HasReferenceFile = true;
                 return true;
             }
             catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
-                log.LogDebug("Episode does not exist in CosmosDB : {0}", this.VodId);
+                log.LogDebug("Episode does not exist in CosmosDB : {0}", VodId);
                 return false;
             }
             catch (CosmosException ex)
             {
                 // Unexpected exception
-                log.LogError("Unexpected: Couldn't load episode from CosmosDB : {0} - Status code: {1}", this.VodId, ex.StatusCode);
+                log.LogError("Unexpected: Couldn't load episode from CosmosDB : {0} - Status code: {1}", VodId, ex.StatusCode);
                 throw;
             }
         }
@@ -278,15 +228,15 @@ namespace sbroennelab.nhkworldtv
             try
             {
                 // Read the item to see if it exists.
-                ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.ReadItemAsync<VodProgram>(this.VodId, new PartitionKey(this.PartitionKey));
-                log.LogDebug("Update episode in CosmosDB : {0}", this.VodId);
+                ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.ReadItemAsync<VodProgram>(VodId, new PartitionKey(PartitionKey));
+                log.LogDebug("Update episode in CosmosDB : {0}", VodId);
                 return true;
             }
             catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
                 // Create an item in the container
-                ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.CreateItemAsync<VodProgram>(this, new PartitionKey(this.PartitionKey));
-                log.LogDebug("Insert episode in CosmosDB : {0}", this.VodId);
+                ItemResponse<VodProgram> vodProgramResponse = await Database.VodProgram.CreateItemAsync<VodProgram>(this, new PartitionKey(PartitionKey));
+                log.LogDebug("Insert episode in CosmosDB : {0}", VodId);
                 return true;
             }
         }

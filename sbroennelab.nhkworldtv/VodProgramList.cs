@@ -27,8 +27,7 @@ namespace sbroennelab.nhkworldtv
             var sqlQueryText = $"SELECT TOP {maxItems} c.id, c.Path1080P, c.Path720P, c.OnAir FROM c ORDER by c.LastUpdate DESC";
             var queryDefinition = new QueryDefinition(sqlQueryText);
             var queryResultSetIterator = Database.VodProgram.GetItemQueryIterator<VodProgram>(queryDefinition);
-            var baseUrl = "https://nhkw-mzvod.akamaized.net/www60/mz-nhk10/_definst_/mp4:mm/flvmedia/5905";
-
+            
             while (queryResultSetIterator.HasMoreResults)
             {
                 var currentResultSet = await queryResultSetIterator.ReadNextAsync();
@@ -38,16 +37,16 @@ namespace sbroennelab.nhkworldtv
                     string vodId = program.VodId;
                     /// Some episodes do not have a 1080P file
                     if (program.Path1080P != null)
-                        cacheEpisode.P1080P = program.Path1080P.Replace(baseUrl, "");
+                        cacheEpisode.P1080P = program.Path1080P;
 
-                    cacheEpisode.P720P = program.Path720P.Replace(baseUrl, "");
+                    cacheEpisode.P720P = program.Path720P;
                     cacheEpisode.OnAir = program.OnAir;
                     cacheEpisodeDict.Add(vodId, cacheEpisode);
                 }
             }
 
             string jsonString = JsonConvert.SerializeObject(cacheEpisodeDict);
-            return (jsonString);
+            return jsonString;
         }
 
         /// <summary>
@@ -114,7 +113,7 @@ namespace sbroennelab.nhkworldtv
 
             log.LogInformation("Inserted {0} - deleted {1} episodes from CosmosDB", insertCounter, deleteCounter);
 
-            return (true);
+            return true;
 
         }
     }

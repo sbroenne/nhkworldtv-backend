@@ -1,11 +1,10 @@
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace sbroennelab.nhkworldtv
@@ -13,57 +12,73 @@ namespace sbroennelab.nhkworldtv
     /// <summary> Implements NHK API </summary>
     public static class NhkApi
     {
+        /// <summary>
+        /// Gets a substring from a source
+        /// </summary>
+        /// <param name="strSource"></param>
+        /// <param name="strStart"></param>
+        /// <param name="strEnd"></param>
+        /// <returns></returns>
+        private static string getBetween(string strSource, string strStart, string strEnd)
+        {
+            const int kNotFound = -1;
+
+            var startIdx = strSource.IndexOf(strStart);
+            if (startIdx != kNotFound)
+            {
+                startIdx += strStart.Length;
+                var endIdx = strSource.IndexOf(strEnd, startIdx);
+                if (endIdx > startIdx)
+                {
+                    return strSource.Substring(startIdx, endIdx - startIdx);
+                }
+            }
+            return string.Empty;
+        }
+
         // Create static classes so that they will be re-used between calls
 
         private static readonly string NHK_ALL_EPISODES_URL = "https://nwapi.nhk.jp/nhkworld/vodesdlist/v7b/all/all/en/all/all.json";
 
         private static readonly string NHK_GET_EPISODE_DETAIL_URL = "https://nwapi.nhk.jp/nhkworld/vodesdlist/v7b/vod_id/{0}/en/all/1.json";
 
-        // NHK APIs
-        private static readonly string NHK_PLAYER_URL = "https://movie-s.nhk.or.jp/v/refid/nhkworld/prefid/{0}?embed=js&targetId=videoplayer&de-responsive=true&de-callback-method=nwCustomCallback&de-appid={1}&de-subtitle-on=false";
 
-        private static readonly string NHK_VIDEO_URL = "https://movie-s.nhk.or.jp/ws/ws_program/api/67f5b750-b419-11e9-8a16-0e45e8988f42/apiv/5/mode/json?v={0}";
+        // NHK APIs
+        private static readonly string NHK_MOVIE_CONTENT_PLAYER_URL = "https://www3.nhk.or.jp/nhkworld/common/player/tv/vod/world/player/js/movie-content-player.js";
 
         // HTTP
         private static readonly HttpClient NHKHttpClient = new();
 
-        //RegEx
-        private static readonly Regex rxPlayer = new(@"'data-de-program-uuid','(.+?)'",
-             RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
 
         /// <summary>Retrieves the video asset information for a program/episode</summary>
-        /// <param name="ProgramUuid">ProgramUuid used for retrieving the asset</param>
+        /// <param name="VodId">VodId for retrieving the asset</param>
         /// <param name="log"></param>
-        /// <returns>A Newtonsoft JObject with the video asset information</returns>
-        public static async Task<JObject> GetAsset(string ProgramUuid, ILogger log)
+        /// <returns>A Stream with the video asset information</returns>
+        public static async Task<Stream> GetStream(string VodId, ILogger log)
         {
-            string videoUrl = String.Format(NHK_VIDEO_URL, ProgramUuid);
+            string videoUrl = await GetMediaInformationApiUrl(VodId, log);
             try
             {
                 var response = await NHKHttpClient.GetAsync(videoUrl);
                 if (!response.IsSuccessStatusCode)
                 {
-                    // Wait two sec & try again for second time, NHK sometimes has issues
-                    log.LogInformation("Retrying getting assets from NHK for program: {0}", ProgramUuid);
-                    System.Threading.Thread.Sleep(2000);
-                    response = await NHKHttpClient.GetAsync(videoUrl);
+                    log.LogInformation("Retrying getting stream information from NHK for VodId: {0}", VodId);
+                    return null;
                 }
                 var contents = await response.Content.ReadAsStringAsync();
                 try
                 {
-                    var video = JObject.Parse(contents);
-                    var asset = (JObject)video["response"]["WsProgramResponse"]["program"]["asset"];
-                    return (asset);
+                    Stream stream = JsonSerializer.Deserialize<Stream>(contents);
+                    return stream;
                 }
-                catch (JsonReaderException ex)
+                catch (JsonException ex)
                 {
                     throw ex;
                 }
             }
             catch (HttpRequestException ex)
             {
-                log.LogError("Couldn't load asset for ProgramUuid: {0} - Message: {1}", ProgramUuid, ex.Message);
+                log.LogError("Couldn't load asset for VodId: {0} - Message: {1}", VodId, ex.Message);
                 return null;
             }
         }
@@ -72,9 +87,9 @@ namespace sbroennelab.nhkworldtv
         /// Retrieves the detail information for an episode
         /// <param name="VodId">VodId from the NHK Api</param>
         /// </summary>
-        public static async Task<JObject> GetEpisode(string VodId, ILogger log)
+        public static async Task<Episode> GetEpisode(string VodId, ILogger log)
         {
-            string episodeUrl = String.Format(NHK_GET_EPISODE_DETAIL_URL, VodId);
+            string episodeUrl = string.Format(NHK_GET_EPISODE_DETAIL_URL, VodId);
             try
             {
                 var response = await NHKHttpClient.GetAsync(episodeUrl);
@@ -82,11 +97,11 @@ namespace sbroennelab.nhkworldtv
 
                 try
                 {
-                    var episode = JObject.Parse(contents);
-                    if (episode["data"]["episodes"].Count() == 1)
+                    var vodEpisodes = JsonSerializer.Deserialize<VodEpisodes>(contents);
+                    if (vodEpisodes.data.episodes.Length == 1)
                     {
-                        var episodeDetail = (JObject)episode["data"]["episodes"][0];
-                        return (episodeDetail);
+                        var episode = vodEpisodes.data.episodes[0];
+                        return episode;
                     }
                     else
                     {
@@ -94,7 +109,7 @@ namespace sbroennelab.nhkworldtv
                         return null;
                     }
                 }
-                catch (JsonReaderException ex)
+                catch (JsonException ex)
                 {
                     log.LogWarning("Couldn't parse JSON for episode: {0} - Message : {1}", VodId, ex.Message);
                     throw ex;
@@ -107,12 +122,12 @@ namespace sbroennelab.nhkworldtv
             }
         }
 
-        /// <summary>Extracts the Program Uuid for a given VodId from the NHK Web Player - very slow operation!</summary>
+        // <summary>Extracts the Media Information Url from the NHK Web Player - very slow operation!</summary>
         /// <param name="VodId">VodId from the NHK Api</param>
         /// <param name="log"></param>
-        public static async Task<string> GetProgramUuid(string VodId, ILogger log)
+        public static async Task<string> GetMediaInformationApiUrl(string VodId, ILogger log)
         {
-            var playerUrl = String.Format(NHK_PLAYER_URL, VodId, VodId);
+            var playerUrl = NHK_MOVIE_CONTENT_PLAYER_URL;
             try
             {
                 var response = await NHKHttpClient.GetAsync(playerUrl);
@@ -120,23 +135,23 @@ namespace sbroennelab.nhkworldtv
                 {
                     var contents = await response.Content.ReadAsStringAsync();
 
-                    // Extract the Program Uuid
-                    MatchCollection matches = rxPlayer.Matches(contents);
-                    if (matches.Count == 1)
-                    {
-                        // Extract the Program Uuid
-                        var matched = matches[0].Value;
-                        matched = matched.Replace("\"", "");
-                        matched = matched.Replace("'", "");
-                        var programUuid = matched.Split(",")[1];
-                        log.LogInformation("Extracted Program Uuid: {0} - VodId: {1}", programUuid, VodId);
-                        return (programUuid);
-                    }
+                    // First, find the block in the js that contains the prod token and url
+                    var prodBlock = getBetween(contents, "prod:{", "}.prod;");
+                    // Extract the relevant information
+                    var apiUrl = getBetween(prodBlock, "apiUrl:\"", "\"");
+                    var token = getBetween(prodBlock, "token:\"", "\"");
+                    string mediaInformationApiUrl = string.Format("{0}/?token={1}&type=json&optional_id={2}&active_flg=1", apiUrl, token, VodId);
+                    
+                    
+                    // check if the URI is correct
+                    if (Uri.IsWellFormedUriString(mediaInformationApiUrl, UriKind.Absolute))
+                        return mediaInformationApiUrl;
                     else
                     {
-                        log.LogError("Couldn't extract Program Uuid for VodId: {0}", VodId);
+                        log.LogError("Could not construct valid GetMediaInformationApiUrl: {0}", mediaInformationApiUrl);
                         return null;
                     }
+
                 }
                 else
                 {
@@ -151,9 +166,10 @@ namespace sbroennelab.nhkworldtv
             }
         }
 
+
         /// <summary>Get List of VodIds from NHK</summary>
         /// <param name="log"></param>
-        /// <returns>List&lt;string&gt; of VodIds</returns>
+        /// <returns>List of VodIds</returns>
         public static async Task<List<string>> GetVodIdList(ILogger log)
         {
             string getAllEpisodes = NHK_ALL_EPISODES_URL;
@@ -164,16 +180,16 @@ namespace sbroennelab.nhkworldtv
                 if (response.IsSuccessStatusCode)
                 {
                     var contents = await response.Content.ReadAsStringAsync();
-                    JObject episodeList = JObject.Parse(contents);
+                    VodEpisodes episodeList = JsonSerializer.Deserialize<VodEpisodes>(contents);
 
                     var episodes =
-                    from p in episodeList["data"]["episodes"]
-                    select (string)p["vod_id"];
+                    from p in episodeList.data.episodes
+                    select p.vod_id;
 
                     var returnList = episodes.ToList<string>();
                     log.LogInformation("Retrieved episode list with {0} entries", returnList.Count);
 
-                    return (returnList);
+                    return returnList;
                 }
                 else
                 {

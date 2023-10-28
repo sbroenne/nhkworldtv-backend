@@ -23,7 +23,7 @@ namespace sbroennelab.nhkworldtv
                                                                         new DefaultAzureCredential());
 
 
-        public static async Task<Boolean> Create(int expiryHours, ILogger log)
+        public static async Task<bool> Create(int expiryHours, ILogger log)
         {
 
             string fileName = "cache.json";
