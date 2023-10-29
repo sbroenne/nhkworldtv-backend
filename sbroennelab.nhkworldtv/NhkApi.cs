@@ -1,10 +1,9 @@
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace sbroennelab.nhkworldtv
@@ -42,7 +41,6 @@ namespace sbroennelab.nhkworldtv
 
         private static readonly string NHK_GET_EPISODE_DETAIL_URL = "https://nwapi.nhk.jp/nhkworld/vodesdlist/v7b/vod_id/{0}/en/all/1.json";
 
-
         // NHK APIs
         private static readonly string NHK_MOVIE_CONTENT_PLAYER_URL = "https://www3.nhk.or.jp/nhkworld/common/player/tv/vod/world/player/js/movie-content-player.js";
 
@@ -60,25 +58,23 @@ namespace sbroennelab.nhkworldtv
             try
             {
                 var response = await NHKHttpClient.GetAsync(videoUrl);
-                if (!response.IsSuccessStatusCode)
-                {
-                    log.LogInformation("Retrying getting stream information from NHK for VodId: {0}", VodId);
-                    return null;
-                }
+                response.EnsureSuccessStatusCode();
                 var contents = await response.Content.ReadAsStringAsync();
                 try
                 {
                     Stream stream = JsonSerializer.Deserialize<Stream>(contents);
+                    log.LogInformation("Retrieved Strean for VodId: {0}", VodId);
                     return stream;
                 }
                 catch (JsonException ex)
                 {
-                    throw ex;
+                    log.LogError("Couldn't parse JSON for episode: {0} - Message : {1}", VodId, ex.Message);
+                    return null;
                 }
             }
             catch (HttpRequestException ex)
             {
-                log.LogError("Couldn't load asset for VodId: {0} - Message: {1}", VodId, ex.Message);
+                log.LogError("Error getting stream information from NHK for VodId: {0} - Exception: {1]}", VodId, ex.Message);
                 return null;
             }
         }
@@ -93,6 +89,7 @@ namespace sbroennelab.nhkworldtv
             try
             {
                 var response = await NHKHttpClient.GetAsync(episodeUrl);
+                response.EnsureSuccessStatusCode();
                 var contents = await response.Content.ReadAsStringAsync();
 
                 try
@@ -105,14 +102,14 @@ namespace sbroennelab.nhkworldtv
                     }
                     else
                     {
-                        log.LogWarning("No episode detail for: {0}", VodId);
+                        log.LogError("No episode detail for: {0}", VodId);
                         return null;
                     }
                 }
                 catch (JsonException ex)
                 {
-                    log.LogWarning("Couldn't parse JSON for episode: {0} - Message : {1}", VodId, ex.Message);
-                    throw ex;
+                    log.LogError("Couldn't parse JSON for VodId: {0} - Message : {1}", VodId, ex.Message);
+                    return null;
                 }
             }
             catch (HttpRequestException ex)
@@ -131,33 +128,27 @@ namespace sbroennelab.nhkworldtv
             try
             {
                 var response = await NHKHttpClient.GetAsync(playerUrl);
-                if (response.IsSuccessStatusCode)
-                {
-                    var contents = await response.Content.ReadAsStringAsync();
+                response.EnsureSuccessStatusCode();
+                var contents = await NHKHttpClient.GetStringAsync(playerUrl);
 
-                    // First, find the block in the js that contains the prod token and url
-                    var prodBlock = getBetween(contents, "prod:{", "}.prod;");
-                    // Extract the relevant information
-                    var apiUrl = getBetween(prodBlock, "apiUrl:\"", "\"");
-                    var token = getBetween(prodBlock, "token:\"", "\"");
-                    string mediaInformationApiUrl = string.Format("{0}/?token={1}&type=json&optional_id={2}&active_flg=1", apiUrl, token, VodId);
-                    
-                    
-                    // check if the URI is correct
-                    if (Uri.IsWellFormedUriString(mediaInformationApiUrl, UriKind.Absolute))
-                        return mediaInformationApiUrl;
-                    else
-                    {
-                        log.LogError("Could not construct valid GetMediaInformationApiUrl: {0}", mediaInformationApiUrl);
-                        return null;
-                    }
+                // First, find the block in the js that contains the prod token and url
+                var prodBlock = getBetween(contents, "prod:{", "}.prod;");
+                // Extract the relevant information
+                var apiUrl = getBetween(prodBlock, "apiUrl:\"", "\"");
+                var token = getBetween(prodBlock, "token:\"", "\"");
+                string mediaInformationApiUrl = string.Format("{0}/?token={1}&type=json&optional_id={2}&active_flg=1", apiUrl, token, VodId);
 
-                }
+
+                // check if the URI is correct
+                if (Uri.IsWellFormedUriString(mediaInformationApiUrl, UriKind.Absolute))
+                    return mediaInformationApiUrl;
                 else
                 {
-                    log.LogError("Couldn't successfully load Player Url for VodId: {0} - HTTP Status: {1}", VodId, response.StatusCode);
+                    log.LogError("Could not construct valid GetMediaInformationApiUrl: {0}", mediaInformationApiUrl);
                     return null;
                 }
+
+
             }
             catch (HttpRequestException ex)
             {
@@ -177,23 +168,24 @@ namespace sbroennelab.nhkworldtv
             try
             {
                 var response = await NHKHttpClient.GetAsync(getAllEpisodes);
-                if (response.IsSuccessStatusCode)
+                response.EnsureSuccessStatusCode();
+                var contents = await response.Content.ReadAsStringAsync();
+                try
                 {
-                    var contents = await response.Content.ReadAsStringAsync();
                     VodEpisodes episodeList = JsonSerializer.Deserialize<VodEpisodes>(contents);
-
                     var episodes =
-                    from p in episodeList.data.episodes
-                    select p.vod_id;
+              from p in episodeList.data.episodes
+              select p.vod_id;
 
                     var returnList = episodes.ToList<string>();
                     log.LogInformation("Retrieved episode list with {0} entries", returnList.Count);
 
                     return returnList;
+
                 }
-                else
+                catch (JsonException ex)
                 {
-                    log.LogError("Couldn't retrieve episode list - HTTP Status: {0} ", response.StatusCode);
+                    log.LogError("Couldn't parse JSON for VodId list: Message : {0}", ex.Message);
                     return null;
                 }
             }

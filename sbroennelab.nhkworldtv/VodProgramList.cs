@@ -27,7 +27,7 @@ namespace sbroennelab.nhkworldtv
             var sqlQueryText = $"SELECT TOP {maxItems} c.id, c.Path1080P, c.Path720P, c.OnAir FROM c ORDER by c.LastUpdate DESC";
             var queryDefinition = new QueryDefinition(sqlQueryText);
             var queryResultSetIterator = Database.VodProgram.GetItemQueryIterator<VodProgram>(queryDefinition);
-            
+
             while (queryResultSetIterator.HasMoreResults)
             {
                 var currentResultSet = await queryResultSetIterator.ReadNextAsync();

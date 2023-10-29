@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace sbroennelab.nhkworldtv.Tests
@@ -50,7 +49,7 @@ namespace sbroennelab.nhkworldtv.Tests
         {
             var episode = await NhkApi.GetEpisode(fixture.VodId, logger);
             Assert.NotNull(episode);
-            Assert.IsType<JObject>(episode);
+            Assert.IsType<Episode>(episode);
         }
     }
 }
