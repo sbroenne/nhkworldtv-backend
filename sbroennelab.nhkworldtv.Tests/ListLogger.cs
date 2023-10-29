@@ -14,7 +14,7 @@ namespace sbroennelab.nhkworldtv.Tests
 
         public ListLogger()
         {
-            this.Logs = new List<string>();
+            Logs = new List<string>();
         }
 
         public void Log<TState>(LogLevel logLevel,
@@ -24,7 +24,7 @@ namespace sbroennelab.nhkworldtv.Tests
                                 Func<TState, Exception, string> formatter)
         {
             string message = formatter(state, exception);
-            this.Logs.Add(String.Format("{0}.{1}: {2}", DateTime.UtcNow.Second, DateTime.UtcNow.Millisecond, message));
+            Logs.Add(string.Format("{0}.{1}: {2}", DateTime.UtcNow.Second, DateTime.UtcNow.Millisecond, message));
         }
     }
 }

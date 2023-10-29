@@ -21,8 +21,10 @@ namespace sbroennelab.nhkworldtv.Tests
         [Fact]
         public void Test_NewProgram()
         {
-            var vodProgram = new VodProgram(fixture.VodId, logger);
-            vodProgram.Title = "Test___TestItem";
+            var vodProgram = new VodProgram(fixture.VodId, logger)
+            {
+                Title = "Test___TestItem"
+            };
             Assert.NotNull(vodProgram.PartitionKey);
         }
 
@@ -30,8 +32,10 @@ namespace sbroennelab.nhkworldtv.Tests
         [Fact]
         public async void Test_GetAssets()
         {
-            var vodProgram = new VodProgram(fixture.VodId, logger);
-            vodProgram.ProgramUuid = fixture.ProgramUuid;
+            var vodProgram = new VodProgram(fixture.VodId, logger)
+            {
+                VodId = fixture.VodId
+            };
             Assert.True(await vodProgram.GetAsset());
             Assert.NotEmpty(vodProgram.Path720P);
         }

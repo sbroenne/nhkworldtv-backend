@@ -15,7 +15,7 @@ This Azure Function is a fan project and not related in any way to NHK! I built 
 
 ## 1.2. Overview
 
-[NHK World TV](https://github.com/sbroenne/plugin.video.nhkworldtv) is a Kodi plug-in that displays most of the content from [NHK World Japan](https://www3.nhk.or.jp/nhkworld/en/live/) in Kodi in the highest possible quality (1080p).
+[NHK World TV](https://github.com/sbroenne/plugin.video.nhkworldtv) is a Kodi plug-in that displays most of the content from [NHK World Japan](https://www3.nhk.or.jp/nhkworld/en/live/) in Kodi.
 
 This repo provides a persistent backend-cache hosted on Microsoft Azure Storage to speed up episode video Url lookup operations where the NHK API is very slow.
 
@@ -36,7 +36,7 @@ There are two Timer-Trigger functions:
 - UpdateBlob - creates a JSON file with the paths (1080P and 720P) for the episodes of the video-on-demand programs on Azure Storage. The Kodi addon loads this file on start-up.
 - PopulateCache - updates the the episode information in CosmosDB
 
-There used to be a public API for getting the program list but this has been retired in favour of the Azure Storage solution. If you need to access the file out-side the addon, here is the [link](https://nhkworldtv.azureedge.net/program-list-v2/cache.json).
+If you need to access the file outside the add-on, here is the [link](https://nhkworldtv.azureedge.net/program-list-v2/cache.json).
 
 The Azure function use its system-managed identity to access Cosmos DB and the storage account.
 
