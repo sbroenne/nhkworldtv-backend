@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace sbroennelab.nhkworldtv.Tests
@@ -20,7 +21,7 @@ namespace sbroennelab.nhkworldtv.Tests
 
 
         [Fact]
-        public async void Test_GetNHKVodIdList()
+        public async Task Test_GetNHKVodIdList()
         {
             var vodIdList = await NhkApi.GetVodIdList(logger);
             Assert.True(vodIdList.Count > 0);
@@ -28,7 +29,7 @@ namespace sbroennelab.nhkworldtv.Tests
 
 
         [Fact]
-        public async void Test_GetMediaInformationApiUrl()
+        public async Task Test_GetMediaInformationApiUrl()
         {
             var mediaInformationApiUrl = await NhkApi.GetMediaInformationApiUrl(fixture.VodId, logger);
             Assert.NotNull(mediaInformationApiUrl);
@@ -36,7 +37,7 @@ namespace sbroennelab.nhkworldtv.Tests
 
 
         [Fact]
-        public async void Test_GetStream()
+        public async Task Test_GetStream()
         {
             var stream = await NhkApi.GetStream(fixture.VodId, logger);
             Assert.NotNull(stream);
@@ -45,7 +46,7 @@ namespace sbroennelab.nhkworldtv.Tests
         }
 
         [Fact]
-        public async void Test_GetEpisode()
+        public async Task Test_GetEpisode()
         {
             var episode = await NhkApi.GetEpisode(fixture.VodId, logger);
             Assert.NotNull(episode);

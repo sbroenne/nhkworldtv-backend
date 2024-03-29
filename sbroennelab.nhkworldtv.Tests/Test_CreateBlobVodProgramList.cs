@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace sbroennelab.nhkworldtv.Tests
@@ -13,7 +14,7 @@ namespace sbroennelab.nhkworldtv.Tests
 
 
         [Fact]
-        public async void Test_CreateJsonBlob()
+        public async Task Test_CreateJsonBlob()
         {
             bool success = await JsonBlob.Create(4, logger);
             Assert.True(success);

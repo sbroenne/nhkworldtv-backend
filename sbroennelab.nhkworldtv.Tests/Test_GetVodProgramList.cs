@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace sbroennelab.nhkworldtv.Tests
@@ -17,7 +18,7 @@ namespace sbroennelab.nhkworldtv.Tests
         }
 
         [Fact]
-        public async void Test_PopulateCache()
+        public async Task Test_PopulateCache()
         {
 
             // Creating a dummy program that will be deleted so we can test that code path
@@ -35,7 +36,7 @@ namespace sbroennelab.nhkworldtv.Tests
 
 
         [Fact]
-        public async void Test_GetProgramList()
+        public async Task Test_GetProgramList()
         {
             string json = await VodProgramList.GetProgramList(2000);
             Assert.NotEmpty(json);
