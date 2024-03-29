@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace sbroennelab.nhkworldtv.Tests
@@ -30,7 +31,7 @@ namespace sbroennelab.nhkworldtv.Tests
 
 
         [Fact]
-        public async void Test_GetAssets()
+        public async Task Test_GetAssets()
         {
             var vodProgram = new VodProgram(fixture.VodId, logger)
             {
@@ -41,14 +42,14 @@ namespace sbroennelab.nhkworldtv.Tests
         }
 
         [Fact]
-        public async void Test_GetEpisodeDetail()
+        public async Task Test_GetEpisodeDetail()
         {
             var vodProgram = new VodProgram(fixture.VodId, logger);
             Assert.True(await vodProgram.GetEpisodeDetail());
             Assert.NotEmpty(vodProgram.Title);
         }
         [Fact]
-        public async void Test_GetFromNHK()
+        public async Task Test_GetFromNHK()
         {
             var vodProgram = new VodProgram(fixture.VodId, logger);
             Assert.True(await vodProgram.GetFromNHK());
@@ -57,7 +58,7 @@ namespace sbroennelab.nhkworldtv.Tests
 
 
         [Fact]
-        public async void Test_Load()
+        public async Task Test_Load()
         {
             var vodProgram = new VodProgram(fixture.VodId, logger);
             Assert.True(await vodProgram.Load());
@@ -65,7 +66,7 @@ namespace sbroennelab.nhkworldtv.Tests
         }
 
         [Fact]
-        public async void Test_Save()
+        public async Task Test_Save()
         {
             var vodProgram = new VodProgram(fixture.VodId, logger);
             Assert.True(await vodProgram.GetFromNHK());
@@ -74,7 +75,7 @@ namespace sbroennelab.nhkworldtv.Tests
         }
 
         [Fact]
-        public async void Test_Get()
+        public async Task Test_Get()
         {
             var vodProgram = new VodProgram(fixture.VodId, logger);
             Assert.True(await vodProgram.Get());
@@ -82,7 +83,7 @@ namespace sbroennelab.nhkworldtv.Tests
         }
 
         [Fact]
-        public async void Test_Delete()
+        public async Task Test_Delete()
         {
             var vodProgram = new VodProgram(fixture.VodId, logger);
 
