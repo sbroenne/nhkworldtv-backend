@@ -272,3 +272,4 @@ __pycache__/
 **/coverage.json
 **/lcov.info
 **/.profile
+.mono/
