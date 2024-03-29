@@ -3,7 +3,7 @@
 - [1. Azure Cache for NHK World TV Kodi Plugin](#1-azure-cache-for-nhk-world-tv-kodi-plugin)
   - [1.1. Disclaimer](#11-disclaimer)
   - [1.2. Overview](#12-overview)
-  - [1.3. Design & Implementation on Azure](#13-design--implementation-on-azure)
+  - [1.3. Design \& Implementation on Azure](#13-design--implementation-on-azure)
   - [1.4. Azure Functions](#14-azure-functions)
   - [1.5. CosmosDB Set-up](#15-cosmosdb-set-up)
   - [1.6. Development Environment](#16-development-environment)
@@ -11,7 +11,7 @@
 
 ## 1.1. Disclaimer
 
-This Azure Function is a fan project and not related in any way to NHK! I built this plugin because NHK does not support Android TV (yet).
+This Azure Function is a fan project and not related in any way to NHK! I built this solution because NHK does not support Android TV (yet).
 
 ## 1.2. Overview
 
@@ -52,7 +52,7 @@ I use the Azurite extension instead of the Azure Storage Emulator.
 
 **Important hint while unit testing**: You need to set the application setting as Environment variables in **Windows 11/WSLv2** if you want to run the unit tests from the test runner (in my case .NET Test Explorer). Otherwise the functions will not find them - even though they are defined and used in local.settings.json.
 
-It is a pure .Net 6 solution so you should be able to use any DEV environment you prefer. I also tested it on Visual Studio 2022.
+It is a pure .Net 8 solution so you should be able to use any DEV environment you prefer. I also tested it on Visual Studio 2022.
 
 ## 1.7. Deployment on Azure
 

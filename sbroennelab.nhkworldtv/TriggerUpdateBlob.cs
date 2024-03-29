@@ -1,17 +1,24 @@
-using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
+using Microsoft.Azure.Functions.Worker;
 
 namespace sbroennelab.nhkworldtv
 {
 
-    public static class TriggerUpdateBlob
+    public class TriggerUpdateBlob
     {
+        private readonly ILogger _logger;
 
-        [FunctionName("UpdateBlob")]
-        public static async Task Run([TimerTrigger("0 5 */4 * * *")] TimerInfo myTimer, ILogger log)
+        public TriggerUpdateBlob(ILogger<TriggerUpdateBlob> logger)
         {
-            var success = await JsonBlob.Create(4, log);
+            _logger = logger;
+        }
+
+
+        [Function("UpdateBlob")]
+        public async Task Run([TimerTrigger("0 5 */4 * * *")] TimerInfo myTimer)
+        {
+            var success = await JsonBlob.Create(4, _logger);
         }
     }
 }
