@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v1
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
@@ -39,9 +39,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_F49DEA773903404F9D330DC706CC4946 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_942A126496D24063B07239A4E8EA0612 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_B925C6BCDA7945B6A79B7897ED5DE709 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_833B1BF9A75844788DAD672C29FE35EF }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_C7CB2E718C90461D8DD62F74D9FA0F59 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_48571730F03F4FF687BE93D3A548DEC2 }}
 
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
